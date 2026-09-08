@@ -47,17 +47,13 @@ exports.getMetrics = async (req, res) => {
     ];
 
     const sources = sourceConfigs.map(cfg => {
-      const latency = Math.floor(Math.random() * (cfg.baseMax - cfg.baseMin + 1)) + cfg.baseMin;
-      const hasSpike = Math.random() < 0.02;
-      const errorRate = hasSpike ? (Math.random() * 1.5 + 0.4).toFixed(1) + '%' : '0.0%';
-
       return {
         id: cfg.id,
         name: cfg.name,
         desc: cfg.desc,
         records: cfg.count,
-        latency,
-        errorRate,
+        latency: cfg.baseMin + 4,
+        errorRate: '0.0%',
         isOnline: true,
         status: 'ONLINE'
       };

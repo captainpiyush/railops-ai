@@ -14,37 +14,42 @@ const PIPELINE_SOURCES = [
 ];
 
 export default function DataIntegration() {
-  const { defects, blocks, refreshData } = useRailOps();
+  const { defects = [], blocks = [], schedules = [], refreshData } = useRailOps();
   const [metrics, setMetrics] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [lastSyncTime, setLastSyncTime] = useState(null);
   const [isPolling, setIsPolling] = useState(false);
   const intervalRef = useRef(null);
 
-  // Dynamic counts derived from Context datasets
+  // Dynamic counts derived from Context datasets and backend metrics
   const pipelineCounts = useMemo(() => {
-    const tms = defects.filter(d => d.source === 'TMS' || d.department === 'Track').length;
-    const smms = defects.filter(d => d.source === 'SMMS' || d.department === 'Signalling').length;
-    const tdms = defects.filter(d => d.source === 'TDMS' || ['Traction', 'Electrical'].includes(d.department)).length;
-    const bdms = blocks.filter(b => ['PROPOSED', 'ACTIVE'].includes(b.status)).length;
-    const coa = blocks.length + defects.filter(d => d.source === 'COA').length;
-    const timetable = 129;
+    const safeDefects = defects || [];
+    const safeBlocks = blocks || [];
+    const safeSchedules = schedules || [];
+
+    const tms = safeDefects.filter(d => d.source === 'TMS' || d.department === 'Track').length;
+    const smms = safeDefects.filter(d => d.source === 'SMMS' || d.department === 'Signalling').length;
+    const tdms = safeDefects.filter(d => d.source === 'TDMS' || ['Traction', 'Electrical'].includes(d.department)).length;
+    const bdms = safeDefects.filter(d => d.source === 'BDMS' || d.department === 'Rolling Stock').length;
+    const coa = safeBlocks.length;
+    const timetable = safeSchedules.length || 92;
     const freight = 18;
 
     return {
-      TMS: { count: tms || 35 },
-      SMMS: { count: smms || 35 },
-      TDMS: { count: tdms || 32 },
-      BDMS: { count: bdms || 28 },
-      COA: { count: coa || 42 },
+      TMS: { count: tms },
+      SMMS: { count: smms },
+      TDMS: { count: tdms },
+      BDMS: { count: bdms },
+      COA: { count: coa },
       TIMETABLE: { count: timetable },
       FREIGHT: { count: freight }
     };
-  }, [defects, blocks]);
+  }, [defects, blocks, schedules]);
 
   const totalDynamicRecords = useMemo(() => {
+    if (metrics?.summary?.totalRecords) return metrics.summary.totalRecords;
     return Object.values(pipelineCounts).reduce((a, b) => a + (b.count || 0), 0);
-  }, [pipelineCounts]);
+  }, [metrics, pipelineCounts]);
 
   const fetchMetrics = async (isBackground = false) => {
     if (isBackground) setIsPolling(true);
@@ -68,7 +73,7 @@ export default function DataIntegration() {
     fetchMetrics(false);
     intervalRef.current = setInterval(() => {
       fetchMetrics(true);
-    }, 5000);
+    }, 10000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -77,24 +82,22 @@ export default function DataIntegration() {
 
   const unifiedStorage = {
     totalRecords: totalDynamicRecords,
-    volumeMb: ((totalDynamicRecords * 2.1) / 1024).toFixed(2) + ' MB'
+    volumeMb: metrics?.summary?.storageVolumeMb || (((totalDynamicRecords * 2.1) / 1024).toFixed(2) + ' MB')
   };
 
   const sourcesList = useMemo(() => {
-    const baseSources = metrics?.sources || PIPELINE_SOURCES.map(s => ({
+    if (metrics?.sources && metrics.sources.length > 0) {
+      return metrics.sources;
+    }
+    return PIPELINE_SOURCES.map(s => ({
       id: s.id,
       name: s.name,
       desc: s.desc,
-      records: pipelineCounts[s.id]?.count ?? s.defaultCount,
-      latency: 16,
+      records: pipelineCounts[s.id]?.count ?? 0,
+      latency: 18,
       errorRate: '0.0%',
       isOnline: true,
       status: 'ONLINE'
-    }));
-
-    return baseSources.map(s => ({
-      ...s,
-      records: pipelineCounts[s.id]?.count ?? s.records
     }));
   }, [metrics, pipelineCounts]);
 
@@ -152,7 +155,7 @@ export default function DataIntegration() {
                 UNIFIED MULTI-DEPARTMENT INGESTION STREAM
               </h2>
               <span className="font-mono-rail text-[9px] px-2 py-0.5 rounded-full bg-slate-800 text-emerald-400 border border-slate-700">
-                {defects.length} RECORDS ACTIVE
+                {(defects || []).length} RECORDS ACTIVE
               </span>
             </div>
             <span className="font-mono-rail text-[9px] text-slate-500">
@@ -173,7 +176,7 @@ export default function DataIntegration() {
                 </tr>
               </thead>
               <tbody>
-                {defects.slice(0, 50).map(d => (
+                {(defects || []).slice(0, 50).map(d => (
                   <tr key={d._id} className="border-b border-slate-800/60 hover:bg-slate-800/40 transition-colors">
                     <td className="p-3 font-mono-rail text-[10px] text-emerald-400 font-bold">
                       {d.defectCode || d._id.substring(0, 8)}

@@ -13,6 +13,7 @@ const optimizationRoutes = require('./routes/optimization');
 const simulationRoutes = require('./routes/simulation');
 const integrationRoutes = require('./routes/integration');
 const recommendationRoutes = require('./routes/recommendations');
+const systemRoutes = require('./routes/system');
 const { seedDatabase } = require('./seed/seed');
 const Defect = require('./models/Defect');
 
@@ -30,6 +31,7 @@ app.use('/api/optimization', optimizationRoutes);
 app.use('/api/simulation', simulationRoutes);
 app.use('/api/integration', integrationRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/system', systemRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
 

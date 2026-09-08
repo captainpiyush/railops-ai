@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../api/axios';
 
 const RailOpsContext = createContext(null);
@@ -13,18 +13,29 @@ export function RailOpsProvider({ children }) {
   const [recommendationHistory, setRecommendationHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activityFeed, setActivityFeed] = useState([]);
+  const [demoClock, setDemoClock] = useState({
+    isDemoMode: true,
+    effectiveDate: '2026-09-09',
+    effectiveTime: '10:00:00',
+    effectiveNow: new Date('2026-09-09T10:00:00').toISOString()
+  });
 
-  // Fetch all core datasets including active recommendation
+  const effectiveNow = useMemo(() => {
+    return demoClock.effectiveNow ? new Date(demoClock.effectiveNow) : new Date();
+  }, [demoClock.effectiveNow]);
+
+  // Fetch all core datasets including active recommendation and system clock
   const refreshData = useCallback(async () => {
     try {
-      const [defRes, blockRes, confRes, metricsRes, schedRes, recRes, histRes] = await Promise.all([
+      const [defRes, blockRes, confRes, metricsRes, schedRes, recRes, histRes, clockRes] = await Promise.all([
         api.get('/defects'),
         api.get('/blocks'),
         api.get('/optimization/conflicts'),
         api.get('/integration/metrics').catch(() => ({ data: null })),
         api.get('/schedules').catch(() => ({ data: [] })),
         api.get('/recommendations/active').catch(() => ({ data: { recommendation: null } })),
-        api.get('/recommendations/history').catch(() => ({ data: [] }))
+        api.get('/recommendations/history').catch(() => ({ data: [] })),
+        api.get('/system/clock').catch(() => ({ data: null }))
       ]);
 
       if (defRes.data) setDefects(defRes.data);
@@ -34,12 +45,30 @@ export function RailOpsProvider({ children }) {
       if (schedRes.data) setSchedules(schedRes.data);
       if (recRes.data) setActiveRecommendation(recRes.data.recommendation || null);
       if (histRes.data) setRecommendationHistory(histRes.data);
+      if (clockRes.data && clockRes.data.success) {
+        setDemoClock(clockRes.data);
+      }
     } catch (err) {
       console.error('RailOpsContext: Error refreshing data:', err);
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  // System presentation reset: calls /api/system/reset and restores clean dataset
+  const handleResetDemo = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      await api.post('/system/reset');
+      await refreshData();
+      return { success: true, message: 'Deterministic presentation state restored.' };
+    } catch (err) {
+      console.error('Failed to reset presentation dataset:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [refreshData]);
 
   useEffect(() => {
     refreshData();
@@ -254,6 +283,9 @@ export function RailOpsProvider({ children }) {
     handleRejectDefect,
     handleBundleDefect,
     handleRescheduleBlock,
+    demoClock,
+    effectiveNow,
+    handleResetDemo,
   };
 
   return (

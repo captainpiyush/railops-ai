@@ -13,17 +13,18 @@ const LOADING_STEPS = [
 
 export default function OptimizationEngine() {
   const { refreshData } = useRailOps()
-  const [horizon, setHorizon]         = useState('Today') // 'Today' | '7 Days' | '30 Days'
-  const [running, setRunning]         = useState(false)
-  const [stepIdx, setStepIdx]         = useState(0)
-  const [progress, setProgress]       = useState(0)
-  const [result, setResult]           = useState(null)
-  const [error, setError]             = useState(null)
-  const [initConflicts, setInitConflicts] = useState([])
-  const [activeTab, setActiveTab]     = useState('overview') // 'overview' | 'candidates' | 'bundles' | 'conflicts'
-  const [expandedBundle, setExpandedBundle] = useState(null)
-  const [isApproving, setIsApproving] = useState(false)
-  const [approveSuccess, setApproveSuccess] = useState(null)
+  const [horizon, setHorizon]                 = useState('Today') // 'Today' | '7 Days' | '30 Days'
+  const [selectedCorridor, setSelectedCorridor] = useState('ALL') // 'ALL' | 'COR-01'..'COR-05'
+  const [running, setRunning]                 = useState(false)
+  const [stepIdx, setStepIdx]                 = useState(0)
+  const [progress, setProgress]               = useState(0)
+  const [result, setResult]                   = useState(null)
+  const [error, setError]                     = useState(null)
+  const [initConflicts, setInitConflicts]     = useState([])
+  const [activeTab, setActiveTab]             = useState('overview') // 'overview' | 'candidates' | 'bundles' | 'conflicts'
+  const [expandedBundle, setExpandedBundle]   = useState(null)
+  const [isApproving, setIsApproving]         = useState(false)
+  const [approveSuccess, setApproveSuccess]   = useState(null)
 
   // Load initial conflict data on mount
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function OptimizationEngine() {
 
     let apiResult = null
     try {
-      const res = await api.post('/optimization/run', { horizon, corridorId: 'COR-01' })
+      const res = await api.post('/optimization/run', { horizon, corridorId: selectedCorridor })
       apiResult = res.data
     } catch (err) {
       setError(err.response?.data?.error ?? err.message ?? 'Optimization failed')
@@ -110,7 +111,7 @@ export default function OptimizationEngine() {
       const res = await api.post('/optimization/approve', {
         planId: result.planId,
         bundleId: primaryBundle?.bundleId,
-        corridorId: primaryBundle?.corridorId || 'COR-01',
+        corridorId: result.selectedWindow.corridorId || primaryBundle?.corridorId || 'COR-03',
         windowStart: result.selectedWindow.windowStart,
         windowEnd: result.selectedWindow.windowEnd,
         defects: primaryBundle?.defects || []
@@ -216,6 +217,21 @@ export default function OptimizationEngine() {
 
           {/* Planning Horizon Selector & Run Trigger */}
           <div className="flex items-center gap-3">
+            {/* Corridor Selector */}
+            <select
+              value={selectedCorridor}
+              onChange={(e) => setSelectedCorridor(e.target.value)}
+              disabled={running}
+              className="bg-slate-900 border border-slate-700 text-slate-300 font-mono-rail text-[10px] rounded-lg px-2.5 py-1.5 outline-none focus:border-emerald-500 cursor-pointer"
+            >
+              <option value="ALL">ALL Corridors (Network-wide)</option>
+              <option value="COR-01">COR-01 · Delhi–Mumbai</option>
+              <option value="COR-02">COR-02 · Delhi–Howrah</option>
+              <option value="COR-03">COR-03 · Mumbai–Chennai</option>
+              <option value="COR-04">COR-04 · Howrah–Chennai</option>
+              <option value="COR-05">COR-05 · Delhi–Chennai</option>
+            </select>
+
             {/* Horizon Picker */}
             <div className="flex items-center bg-slate-900/80 border border-slate-700 rounded-lg p-0.5">
               {['Today', '7 Days', '30 Days'].map(h => (

@@ -73,7 +73,7 @@ export default function History() {
     }
   ];
 
-  const planVersions = [...dynamicAuditPlans, ...baselinePlans];
+  const planVersions = dynamicAuditPlans.length > 0 ? dynamicAuditPlans : baselinePlans;
 
   const filteredBlocks = blocks.filter(b => {
     if (filterCorridor !== 'ALL' && b.corridorId !== filterCorridor) return false;

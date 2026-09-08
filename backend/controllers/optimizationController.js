@@ -146,8 +146,12 @@ exports.runOptimization = async (req, res) => {
   try {
     const startTime = Date.now();
     const horizon = req.body?.horizon || req.query?.horizon || 'Today';
-    const targetCorridorId = req.body?.corridorId || 'COR-01';
+    const reqCorridor = req.body?.corridorId || req.query?.corridorId;
+    const isNetworkWide = !reqCorridor || reqCorridor === 'ALL';
     const now = getNow();
+
+    const CORRIDOR_IDS = ['COR-01', 'COR-02', 'COR-03', 'COR-04', 'COR-05'];
+    const corridorsToEvaluate = isNetworkWide ? CORRIDOR_IDS : [reqCorridor];
 
     // 1. Fetch active operational records from MongoDB
     const [defects, rawBlocks, trainSchedules, freightForecasts, blockWindows] = await Promise.all([
@@ -172,72 +176,84 @@ exports.runOptimization = async (req, res) => {
     // 3. Multi-Department Task Bundling across corridors
     const intelligentBundles = bundleDefects(scoredDefects);
 
-    // Identify primary bundle for target corridor or top bundle
-    const primaryBundle = intelligentBundles.find(b => b.corridorId === targetCorridorId && b.isMultiDepartment)
-      || intelligentBundles.find(b => b.corridorId === targetCorridorId)
-      || intelligentBundles[0]
-      || { corridorId: targetCorridorId, totalDurationHrs: 4, defects: [] };
-
-    // 4. Generate Candidate Maintenance Windows across shifts using interval arithmetic
+    // 4. Generate & Evaluate Candidate Windows across evaluated corridors
     const targetDate = req.body?.targetDate ? new Date(req.body.targetDate) : now;
-    const candidateConfigs = generateCandidateWindows({
-      corridorId: primaryBundle.corridorId || targetCorridorId,
-      targetDate,
-      requiredDurationHrs: primaryBundle.totalDurationHrs || 4,
-      defects: primaryBundle.defects || [],
-      trainSchedules,
-      activeBlocks: rawBlocks,
-      blockWindows,
-      now,
-      safetyBufferMinutes: SAFETY_BUFFER_MINUTES
-    });
+    const evaluatedCandidates = [];
 
-    // 5. Evaluate Constraints and Score Each Candidate Window
-    const evaluatedCandidates = candidateConfigs.map(candidate => {
-      const constraintResult = evaluateConstraints({
-        windowStart: candidate.windowStart,
-        windowEnd: candidate.windowEnd,
-        corridorId: primaryBundle.corridorId || targetCorridorId,
-        defects: primaryBundle.defects || [],
-        activeBlocks: rawBlocks,
+    for (const cId of corridorsToEvaluate) {
+      const bundle = intelligentBundles.find(b => b.corridorId === cId && b.isMultiDepartment)
+        || intelligentBundles.find(b => b.corridorId === cId)
+        || { corridorId: cId, totalDurationHrs: 4, department: 'Track', defects: [] };
+
+      const candidateConfigs = generateCandidateWindows({
+        corridorId: cId,
+        targetDate,
+        requiredDurationHrs: bundle.totalDurationHrs || 4,
+        defects: bundle.defects || [],
         trainSchedules,
-        freightForecasts,
+        activeBlocks: rawBlocks,
         blockWindows,
         now,
         safetyBufferMinutes: SAFETY_BUFFER_MINUTES
       });
 
-      return scoreCandidateWindow(candidate, constraintResult, primaryBundle);
-    });
+      candidateConfigs.forEach(candidate => {
+        const constraintResult = evaluateConstraints({
+          windowStart: candidate.windowStart,
+          windowEnd: candidate.windowEnd,
+          corridorId: cId,
+          defects: bundle.defects || [],
+          activeBlocks: rawBlocks,
+          trainSchedules,
+          freightForecasts,
+          blockWindows,
+          now,
+          safetyBufferMinutes: SAFETY_BUFFER_MINUTES
+        });
 
-    // Select the highest-scoring feasible candidate window
+        const scored = scoreCandidateWindow(candidate, constraintResult, bundle);
+        scored.corridorId = cId;
+        scored.bundle = bundle;
+        evaluatedCandidates.push(scored);
+      });
+    }
+
+    // Select highest-scoring feasible candidate window across corridors
     const feasibleCandidates = evaluatedCandidates.filter(c => c.feasible);
     feasibleCandidates.sort((a, b) => b.compositeScore - a.compositeScore);
+
     const selectedCandidate = feasibleCandidates[0] || evaluatedCandidates[0] || {
       timeLabel: '02:00 – 06:00',
       compositeScore: 75,
+      corridorId: corridorsToEvaluate[0],
       metrics: { passengerImpact: 0, freightImpact: 0 }
     };
 
+    const primaryBundle = selectedCandidate.bundle
+      || intelligentBundles.find(b => b.corridorId === selectedCandidate.corridorId)
+      || intelligentBundles[0]
+      || { corridorId: selectedCandidate.corridorId || 'COR-03', totalDurationHrs: 4, defects: [] };
+
     // 6. Build Backend Explainability
     const explanations = [
-      `${primaryBundle.defects?.length || 1} departmental maintenance task(s) consolidated (${primaryBundle.department || 'Track'})`,
+      `Evaluated network corridors: ${corridorsToEvaluate.join(', ')}`,
+      `${primaryBundle.defects?.length || 1} departmental maintenance task(s) consolidated on ${selectedCandidate.corridorId || primaryBundle.corridorId} (${primaryBundle.department || 'Track'})`,
       'Constraint-aware optimization applied across timetable movements and safety buffers',
-      `Optimal window: ${selectedCandidate.timeLabel} selected based on constraint analysis`,
+      `Optimal window: ${selectedCandidate.timeLabel} selected based on highest composite feasibility score (${selectedCandidate.compositeScore}/100)`,
       selectedCandidate.metrics?.passengerImpact === 0
-        ? 'Zero passenger express movements disrupted'
-        : `${selectedCandidate.metrics?.passengerImpact} passenger movements safely managed`,
+        ? 'Zero passenger express movements disrupted (operational priority preserved)'
+        : `${selectedCandidate.metrics?.passengerImpact} passenger movements safely accommodated`,
       selectedCandidate.metrics?.freightImpact === 0
         ? 'Zero goods rake movements disrupted'
         : `${selectedCandidate.metrics?.freightImpact} goods rakes scheduled in window`,
-      'Corridor collision eliminated: no overlapping active maintenance blocks',
+      'Corridor collision eliminated: zero overlapping active maintenance blocks',
       `Shared protection setup saves ${primaryBundle.timeSavedHrs || 1.5}h of total corridor closure`
     ];
 
     // 7. Calculate Baseline vs. AI-Optimized Plan Metrics
     const planMetrics = calculatePlanMetrics({
       horizon,
-      corridorId: primaryBundle.corridorId || targetCorridorId,
+      corridorId: selectedCandidate.corridorId || primaryBundle.corridorId,
       bundles: intelligentBundles,
       rawBlocks,
       selectedCandidate

@@ -28,7 +28,7 @@ export default function ApprovalPipeline() {
   const executed = defects.filter(d => d.status === 'EXECUTED');
   const bundled = defects.filter(d => d.status === 'BUNDLED');
 
-  // Coordinated Package Details dynamically derived from activeRecommendation or pending defects
+  // Coordinated Package Details dynamically derived from activeRecommendation
   const coordinatedPackage = activeRecommendation ? {
     planVersion: activeRecommendation.recommendationId,
     blockCode: 'BLK-COORD-AUTO',
@@ -45,36 +45,15 @@ export default function ApprovalPipeline() {
     windowStart: new Date(activeRecommendation.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
     windowEnd: new Date(activeRecommendation.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
     durationHrs: parseFloat((activeRecommendation.durationMinutes / 60).toFixed(1)),
-    timeSavedHrs: 5.0,
+    timeSavedHrs: activeRecommendation.departments?.length >= 3 ? 4.0 : 2.5,
     trainImpact: '0 Passenger Express Services Delayed',
     freightImpact: 'LOW (0 freight conflicts)',
-    availabilityImpact: '+4.6% Asset Availability Improvement',
+    availabilityImpact: activeRecommendation.departments?.length >= 3 ? '+4.6% Asset Availability Improvement' : '+3.4% Asset Availability Improvement',
     conflicts: '0 Conflicts (Zero corridor overlap)',
     score: activeRecommendation.score || 95,
     explanation: activeRecommendation.reasons?.[0] || 'Multi-department tasks consolidated under single corridor possession during safe future window.',
     alternativeWindow: 'Next Inter-Peak Window'
-  } : {
-    planVersion: 'PLAN-COORD-01',
-    blockCode: 'BLK-COORD-01',
-    corridorId: 'COR-02 (Delhi–Howrah)',
-    tasks: [
-      { code: 'DEF-0101', assetId: 'TRK-COR2-201', dept: 'Track', priority: 'CRITICAL', desc: 'Ultrasonic rail flaw detected near Kanpur KM 188', duration: '4h' },
-      { code: 'DEF-0102', assetId: 'SIG-COR2-202', dept: 'Signalling', priority: 'HIGH', desc: 'Point machine electronic interlocking relay calibration', duration: '2h' },
-      { code: 'DEF-0103', assetId: 'OHE-COR2-203', dept: 'Traction', priority: 'HIGH', desc: 'OHE contact wire dropper replacement KM 188.9', duration: '2h' },
-    ],
-    departments: 'Track + Signalling + Traction',
-    windowStart: '14:00',
-    windowEnd: '18:00',
-    durationHrs: 4.0,
-    timeSavedHrs: 4.5,
-    trainImpact: '0 Passenger Express Services Delayed',
-    freightImpact: 'LOW (minimal goods rake regulation)',
-    availabilityImpact: '+4.2% Asset Availability Improvement',
-    conflicts: '0 Conflicts (Zero corridor overlap)',
-    score: 95,
-    explanation: '3 maintenance tasks consolidated under single corridor possession with shared protection setup.',
-    alternativeWindow: 'Tomorrow Night Shift (02:00–06:00)'
-  };
+  } : null;
 
   useEffect(() => {
     if (pending.length > 0) {
@@ -170,7 +149,27 @@ export default function ApprovalPipeline() {
       </div>
 
       {/* ── VIEW 1: COORDINATED BLOCK PACKAGE (REQUIREMENT 26) ── */}
-      {activeView === 'coordinated' && (
+      {activeView === 'coordinated' && !coordinatedPackage && (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-900 border border-slate-800 rounded-xl text-center">
+          <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold mb-3 border border-emerald-500/40">
+            ✓
+          </div>
+          <div className="font-mono-rail text-base font-bold text-slate-100">
+            All AI-Proposed Packages Committed to Schedule
+          </div>
+          <div className="font-mono-rail text-xs text-slate-400 max-w-md mt-1 mb-4">
+            There are currently no uncommitted coordinated proposals awaiting authorization. Active maintenance allocations are live on the Dashboard schedule and traceable in History.
+          </div>
+          <button
+            onClick={() => refreshData()}
+            className="font-mono-rail text-xs px-3.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+          >
+            Check for New Proposals
+          </button>
+        </div>
+      )}
+
+      {activeView === 'coordinated' && coordinatedPackage && (
         <div className="flex-1 grid grid-cols-[1fr_360px] gap-4 overflow-hidden min-h-0">
           {/* Main Package Details */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col gap-4 overflow-y-auto shadow-xl">

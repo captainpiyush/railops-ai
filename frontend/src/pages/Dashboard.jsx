@@ -34,6 +34,8 @@ export default function Dashboard() {
     handleRescheduleBlock,
     handleAcceptRecommendation,
     handleRejectRecommendation,
+    effectiveNow,
+    demoClock
   } = useRailOps();
 
   const [selectedCorridor, setSelectedCorridor] = useState('COR-01'); // Default: COR-01 Delhi -> Mumbai
@@ -43,27 +45,23 @@ export default function Dashboard() {
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
   const [activeConflict, setActiveConflict] = useState(null);
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Real-time clock for synchronized NOW indicator
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 30000);
-    return () => clearInterval(timer);
-  }, []);
+  // Synchronized reference clock derived from central Demo Mode
+  const baseTime = useMemo(() => effectiveNow || new Date(), [effectiveNow]);
 
   const nowPct = useMemo(() => {
-    const minutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+    const minutes = baseTime.getHours() * 60 + baseTime.getMinutes();
     return (minutes / (24 * 60)) * 100;
-  }, [currentTime]);
+  }, [baseTime]);
 
-  const nowTimeStr = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  const nowTimeStr = baseTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-  // Derive target date
+  // Derive target date anchored strictly to demo clock
   const targetDate = useMemo(() => {
-    const d = new Date();
+    const d = new Date(baseTime);
     d.setDate(d.getDate() + selectedDayOffset);
     return d;
-  }, [selectedDayOffset]);
+  }, [baseTime, selectedDayOffset]);
 
   const formattedDateStr = targetDate.toLocaleDateString('en-GB', {
     weekday: 'short',
