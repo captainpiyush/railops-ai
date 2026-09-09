@@ -195,10 +195,10 @@ export default function OptimizationEngine() {
   const explanations     = result?.explanations ?? []
 
   return (
-    <div className="h-full overflow-y-auto p-4 flex flex-col gap-4">
+    <div className="h-full overflow-y-auto p-4 flex flex-col gap-4 bg-slate-950 text-slate-100">
 
       {/* ── PIPELINE HEADER & CONTROLS ── */}
-      <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-xs">
         <div className="flex flex-wrap items-center justify-between px-5 py-3 border-b border-slate-700 gap-3">
           <div>
             <div className="flex items-center gap-2.5">
@@ -377,7 +377,7 @@ export default function OptimizationEngine() {
 
       {/* ── BEFORE VS AFTER PLAN COMPARISON CARD (CRITICAL FEATURE) ── */}
       {result && baseline && optimized && (
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 shadow-xs">
           <div className="flex items-center justify-between mb-3 border-b border-slate-700/60 pb-2">
             <div>
               <div className="font-mono-rail text-xs font-bold text-slate-200 tracking-wide flex items-center gap-2">
@@ -472,8 +472,8 @@ export default function OptimizationEngine() {
       )}
 
       {/* ── TABS NAVIGATION ── */}
-      <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex-1 min-h-0 flex flex-col shadow-lg">
-        <div className="flex items-center border-b border-slate-700 px-4 bg-slate-850">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden flex-1 min-h-0 flex flex-col shadow-lg">
+        <div className="flex items-center border-b border-slate-700 px-4 bg-slate-900/60">
           {[
             { id: 'overview', label: 'OPTIMIZED BLOCK & EXPLANATION', count: explanations.length },
             { id: 'candidates', label: 'CANDIDATE WINDOWS EVALUATION', count: candidateWindows.length },

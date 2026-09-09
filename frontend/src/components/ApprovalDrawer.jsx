@@ -4,7 +4,7 @@ import PriorityScoreBar from './PriorityScoreBar';
 export default function ApprovalDrawer({ defect, pendingCount, onApprove, onReject, loading }) {
   if (!defect) {
     return (
-      <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-4 h-full flex items-center justify-center">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 h-full flex items-center justify-center shadow-xs">
         <div className="text-emerald-500 font-mono-rail text-sm">✓ All defects processed</div>
       </div>
     );
@@ -20,7 +20,7 @@ export default function ApprovalDrawer({ defect, pendingCount, onApprove, onReje
   };
 
   return (
-    <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-4 relative overflow-hidden flex flex-col h-full">
+    <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 relative overflow-hidden flex flex-col h-full shadow-xs">
       {loading && (
         <div className="absolute inset-0 bg-slate-800/80 z-10 flex items-center justify-center backdrop-blur-sm">
           <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
