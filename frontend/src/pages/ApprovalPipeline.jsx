@@ -12,9 +12,9 @@ export default function ApprovalPipeline() {
     isLoading: loading,
     activeRecommendation,
     handleApproveDefect,
-    handleRejectDefect,
     handleBundleDefect,
     handleAcceptRecommendation,
+    handleRejectRecommendation,
     refreshData
   } = useRailOps();
 
@@ -23,6 +23,10 @@ export default function ApprovalPipeline() {
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
   const [planApproved, setPlanApproved] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionError, setRejectionError] = useState('');
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   const pending = defects.filter(d => d.status === 'PENDING').sort((a,b) => b.priorityScore - a.priorityScore);
   const executed = defects.filter(d => d.status === 'EXECUTED');
@@ -84,6 +88,54 @@ export default function ApprovalPipeline() {
       setToast({ visible: true, message: `Error: ${e.message}`, type: 'error' });
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleOpenRejectModal = () => {
+    setRejectionReason('');
+    setRejectionError('');
+    setIsRejectModalOpen(true);
+  };
+
+  const handleCloseRejectModal = () => {
+    setIsRejectModalOpen(false);
+    setRejectionReason('');
+    setRejectionError('');
+  };
+
+  const handleSubmitRejection = async () => {
+    const trimmed = rejectionReason.trim();
+    if (!trimmed) {
+      setRejectionError('Please provide a reason for rejecting this recommendation.');
+      return;
+    }
+
+    if (!activeRecommendation) return;
+
+    setRejectLoading(true);
+    try {
+      await handleRejectRecommendation(
+        activeRecommendation._id,
+        trimmed,
+        'Senior Divisional Operations Manager (Sr. DOM)'
+      );
+      setIsRejectModalOpen(false);
+      setRejectionReason('');
+      setRejectionError('');
+      setToast({
+        visible: true,
+        message: 'Coordinated Package REJECTED — Recorded in operations audit history',
+        type: 'info'
+      });
+      refreshData();
+    } catch (e) {
+      setToast({
+        visible: true,
+        message: `Error rejecting recommendation: ${e.response?.data?.error || e.message}`,
+        type: 'error'
+      });
+    } finally {
+      setRejectLoading(false);
     }
   };
 
@@ -264,17 +316,26 @@ export default function ApprovalPipeline() {
               <span className="font-mono-rail text-[10px] text-slate-400">
                 Authorized Officer: Dispatch to Divisional Control Office (COA)
               </span>
-              <button
-                onClick={handleApproveCoordinatedPackage}
-                disabled={actionLoading || planApproved}
-                className={`font-mono-rail text-xs font-bold px-6 py-3 rounded-lg shadow-lg transition-all ${
-                  planApproved
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                    : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer'
-                }`}
-              >
-                {actionLoading ? 'COMMITTING TO SCHEDULE...' : planApproved ? '✓ PACKAGE APPROVED & COMMITTED' : '✓ APPROVE & COMMIT BLOCK TO SCHEDULE'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleOpenRejectModal}
+                  disabled={actionLoading || rejectLoading || planApproved}
+                  className="font-mono-rail text-xs font-bold px-5 py-3 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-500/60 shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ✕ REJECT
+                </button>
+                <button
+                  onClick={handleApproveCoordinatedPackage}
+                  disabled={actionLoading || rejectLoading || planApproved}
+                  className={`font-mono-rail text-xs font-bold px-6 py-3 rounded-lg shadow-lg transition-all ${
+                    planApproved
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                      : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer'
+                  }`}
+                >
+                  {actionLoading ? 'COMMITTING TO SCHEDULE...' : planApproved ? '✓ PACKAGE APPROVED & COMMITTED' : '✓ APPROVE & COMMIT BLOCK TO SCHEDULE'}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -358,15 +419,12 @@ export default function ApprovalPipeline() {
                   </div>
                 </div>
 
-                <div className="mt-auto grid grid-cols-3 gap-3">
-                  <button onClick={() => handleAction('EXECUTED')} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono-rail text-xs font-bold py-3 rounded-lg transition-colors">
+                <div className="mt-auto grid grid-cols-2 gap-3">
+                  <button onClick={() => handleAction('EXECUTED')} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono-rail text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer">
                     APPROVE & EXECUTE
                   </button>
-                  <button onClick={() => handleAction('BUNDLED')} className="bg-blue-600 hover:bg-blue-500 text-white font-mono-rail text-xs font-bold py-3 rounded-lg transition-colors">
+                  <button onClick={() => handleAction('BUNDLED')} className="bg-blue-600 hover:bg-blue-500 text-white font-mono-rail text-xs font-bold py-3 rounded-lg transition-colors cursor-pointer">
                     BUNDLE
-                  </button>
-                  <button onClick={() => handleAction('REJECTED')} className="border border-red-500 text-red-400 hover:bg-red-500/10 font-mono-rail text-xs font-bold py-3 rounded-lg transition-colors">
-                    REJECT
                   </button>
                 </div>
               </div>
@@ -389,6 +447,106 @@ export default function ApprovalPipeline() {
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-3 flex justify-between items-center">
               <span className="font-mono-rail text-xs text-emerald-400">EXECUTED</span>
               <span className="font-mono-rail text-xl font-bold text-emerald-400">{executed.length}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── REJECTION REASON MODAL (COORDINATED RECOMMENDATION ONLY) ── */}
+      {isRejectModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-lg w-full shadow-2xl relative flex flex-col gap-4 font-mono-rail text-slate-100">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-sm">
+                  ✕
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-red-400 uppercase tracking-wider">
+                    Reject Coordinated Recommendation
+                  </h3>
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    Operations Authorization Decision · Permanent Audit Log
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseRejectModal}
+                className="text-slate-400 hover:text-slate-200 text-sm font-bold p-1 rounded hover:bg-slate-800 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Recommendation Context */}
+            <div className="bg-slate-950 border border-slate-800 rounded-lg p-3.5 flex flex-col gap-2 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Recommendation:</span>
+                <span className="font-bold text-slate-200">
+                  {coordinatedPackage?.planVersion || activeRecommendation?.recommendationId || '—'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Corridor:</span>
+                <span className="font-bold text-slate-200">
+                  {coordinatedPackage?.corridorId || activeRecommendation?.corridorId || '—'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Recommended Window:</span>
+                <span className="font-bold text-emerald-400">
+                  {coordinatedPackage ? `${coordinatedPackage.windowStart} – ${coordinatedPackage.windowEnd} (${coordinatedPackage.durationHrs}h)` : '—'}
+                </span>
+              </div>
+            </div>
+
+            {/* Rejection Reason Form */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-300">
+                Reason for rejection:
+              </label>
+              <p className="text-[11px] text-slate-400">
+                Please provide a reason for rejecting this recommendation.
+              </p>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => {
+                  setRejectionReason(e.target.value);
+                  if (rejectionError) setRejectionError('');
+                }}
+                rows={4}
+                placeholder="e.g., Operational priority changed; passenger movement requires the proposed possession window."
+                className={`w-full bg-slate-950 border ${
+                  rejectionError ? 'border-red-500 ring-1 ring-red-500/50' : 'border-slate-700 focus:border-red-500/80'
+                } rounded-lg p-3 text-xs text-slate-200 placeholder-slate-600 outline-none resize-none transition-colors mt-1`}
+              />
+              {rejectionError && (
+                <span className="text-red-400 text-[11px] font-semibold flex items-center gap-1 mt-1">
+                  <span>⚠</span> {rejectionError}
+                </span>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={handleCloseRejectModal}
+                disabled={rejectLoading}
+                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-rail text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+              >
+                CANCEL
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitRejection}
+                disabled={rejectLoading}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-mono-rail text-xs font-bold transition-colors cursor-pointer shadow disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {rejectLoading ? 'REJECTING...' : 'REJECT RECOMMENDATION'}
+              </button>
             </div>
           </div>
         </div>

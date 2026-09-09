@@ -47,7 +47,7 @@ async function runTests() {
   // ── TEST 1: Passenger overlaps candidate -> candidate rejected ──
   {
     // Find a passenger train on COR-01 (e.g. 12954 Paschim Express at 11:30–12:10)
-    const paschim = trainSchedules.find(t => t.trainNumber === '12954' && t.corridorId === 'COR-01');
+    const paschim = trainSchedules.find(t => (t.trainNumber === '12953' || t.trainType === 'Express') && t.corridorId === 'COR-01');
     const candStart = new Date(paschim.departureTime);
     const candEnd = new Date(candStart.getTime() + 3 * 3600000);
 
@@ -227,9 +227,9 @@ async function runTests() {
 
   // ── TEST 9: Operator accepts valid recommendation -> scheduled ──
   {
-    // Clean tomorrow slot on COR-04: between GDS-501 (06:00-07:00) and 12839 Exp (11:00-11:50)
-    const s = new Date(tomorrow); s.setHours(7, 30, 0, 0);
-    const e = new Date(tomorrow); e.setHours(10, 30, 0, 0);
+    // Clean tomorrow slot on COR-04: night golden window (02:00-06:00)
+    const s = new Date(tomorrow); s.setHours(2, 0, 0, 0);
+    const e = new Date(tomorrow); e.setHours(6, 0, 0, 0);
 
     const testRec = await Recommendation.create({
       recommendationId: `REC-TEST-${Date.now()}`,
@@ -262,6 +262,12 @@ async function runTests() {
       'TEST 9: Operator accepts valid recommendation -> scheduled',
       `Committed Block: ${responseData?.block?.blockCode}`
     );
+
+    // Cleanup test block & recommendation
+    if (responseData?.block?._id) {
+      await Block.findByIdAndDelete(responseData.block._id);
+    }
+    await Recommendation.findByIdAndDelete(testRec._id);
   }
 
   // ── TEST 10: Operator accepts stale/conflicting recommendation -> NOT scheduled; replan ──

@@ -122,9 +122,9 @@ export function RailOpsProvider({ children }) {
   }, [refreshData]);
 
   // Reject an AI recommendation
-  const handleRejectRecommendation = useCallback(async (recId, reason = 'Operator rejected proposal') => {
+  const handleRejectRecommendation = useCallback(async (recId, reason, operatorId = 'Senior Divisional Operations Manager (Sr. DOM)') => {
     try {
-      const res = await api.post(`/recommendations/${recId}/reject`, { reason });
+      const res = await api.post(`/recommendations/${recId}/reject`, { reason, operatorId });
       setActiveRecommendation(null);
 
       setActivityFeed(prev => [{

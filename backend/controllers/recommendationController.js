@@ -22,13 +22,18 @@ const CORRIDOR_IDS = ['COR-01', 'COR-02', 'COR-03', 'COR-04', 'COR-05'];
  * Searches across all five corridors and returns all evaluated candidate windows ranked by score
  */
 async function generateAllCorridorCandidates(now = getNow()) {
-  const [defects, rawBlocks, trainSchedules, freightForecasts, blockWindows] = await Promise.all([
+  const [defects, rawBlocks, trainSchedules, freightForecasts, blockWindows, rejectedRecs] = await Promise.all([
     Defect.find({ status: { $in: ['PENDING', 'BUNDLED'] } }).sort({ createdAt: 1 }).lean(),
     Block.find({ status: { $in: ['PROPOSED', 'APPROVED', 'ACTIVE'] } }).lean(),
     TrainSchedule.find({}).lean(),
     FreightForecast.find({}).lean(),
-    BlockWindow.find({}).lean()
+    BlockWindow.find({}).lean(),
+    Recommendation.find({ status: 'REJECTED' }).lean()
   ]);
+
+  const rejectedKeys = new Set(
+    rejectedRecs.map(r => `${r.corridorId}_${new Date(r.startTime).getTime()}_${new Date(r.endTime).getTime()}`)
+  );
 
   // 1. Score defects
   const scoredDefects = defects.map(d => {
@@ -68,6 +73,16 @@ async function generateAllCorridorCandidates(now = getNow()) {
       });
 
       candidates.forEach(candidate => {
+        const candKey = `${corridorId}_${new Date(candidate.windowStart).getTime()}_${new Date(candidate.windowEnd).getTime()}`;
+        if (rejectedKeys.has(candKey)) {
+          rejectedSummary.push({
+            corridorId,
+            timeLabel: candidate.timeLabel,
+            reason: 'Window previously rejected by operator'
+          });
+          return;
+        }
+
         const constraintResult = evaluateConstraints({
           windowStart: candidate.windowStart,
           windowEnd: candidate.windowEnd,
@@ -386,8 +401,12 @@ exports.acceptRecommendation = async (req, res) => {
 exports.rejectRecommendation = async (req, res) => {
   try {
     const { id } = req.params;
-    const { reason = 'Operator rejected proposal' } = req.body;
+    const { reason, operatorId = 'Senior Divisional Operations Manager (Sr. DOM)' } = req.body || {};
     const now = getNow();
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ success: false, error: 'Rejection reason is required.' });
+    }
 
     const recommendation = await Recommendation.findById(id);
     if (!recommendation) {
@@ -398,15 +417,16 @@ exports.rejectRecommendation = async (req, res) => {
     recommendation.operatorAction = {
       action: 'REJECTED',
       timestamp: now,
-      reason,
-      operatorId: 'CHIEF_CONTROLLER_01'
+      reason: reason.trim(),
+      operatorId: operatorId || req.body.operatorRole || 'Senior Divisional Operations Manager (Sr. DOM)'
     };
     await recommendation.save();
 
     res.status(200).json({
       success: true,
       status: 'REJECTED',
-      message: 'Recommendation rejected and recorded in operations audit history.'
+      message: 'Recommendation rejected and recorded in operations audit history.',
+      recommendation
     });
   } catch (err) {
     console.error('Error rejecting recommendation:', err);
