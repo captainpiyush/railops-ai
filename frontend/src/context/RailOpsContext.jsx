@@ -8,6 +8,7 @@ export function RailOpsProvider({ children }) {
   const [blocks, setBlocks] = useState([]);
   const [conflicts, setConflicts] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [corridorWindows, setCorridorWindows] = useState([]);
   const [pipelineStats, setPipelineStats] = useState(null);
   const [activeRecommendation, setActiveRecommendation] = useState(null);
   const [recommendationHistory, setRecommendationHistory] = useState([]);
@@ -27,7 +28,7 @@ export function RailOpsProvider({ children }) {
   // Fetch all core datasets including active recommendation and system clock
   const refreshData = useCallback(async () => {
     try {
-      const [defRes, blockRes, confRes, metricsRes, schedRes, recRes, histRes, clockRes] = await Promise.all([
+      const [defRes, blockRes, confRes, metricsRes, schedRes, recRes, histRes, clockRes, winRes] = await Promise.all([
         api.get('/defects'),
         api.get('/blocks'),
         api.get('/optimization/conflicts'),
@@ -35,7 +36,8 @@ export function RailOpsProvider({ children }) {
         api.get('/schedules').catch(() => ({ data: [] })),
         api.get('/recommendations/active').catch(() => ({ data: { recommendation: null } })),
         api.get('/recommendations/history').catch(() => ({ data: [] })),
-        api.get('/system/clock').catch(() => ({ data: null }))
+        api.get('/system/clock').catch(() => ({ data: null })),
+        api.get('/corridors/windows').catch(() => ({ data: [] }))
       ]);
 
       if (defRes.data) setDefects(defRes.data);
@@ -45,6 +47,7 @@ export function RailOpsProvider({ children }) {
       if (schedRes.data) setSchedules(schedRes.data);
       if (recRes.data) setActiveRecommendation(recRes.data.recommendation || null);
       if (histRes.data) setRecommendationHistory(histRes.data);
+      if (winRes?.data) setCorridorWindows(winRes.data);
       if (clockRes.data && clockRes.data.success) {
         setDemoClock(clockRes.data);
       }
@@ -269,6 +272,7 @@ export function RailOpsProvider({ children }) {
     blocks,
     conflicts,
     schedules,
+    corridorWindows,
     pipelineStats,
     activeRecommendation,
     recommendationHistory,

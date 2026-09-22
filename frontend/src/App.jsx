@@ -7,6 +7,7 @@ import WhatIfSimulation from './pages/WhatIfSimulation';
 import ApprovalPipeline from './pages/ApprovalPipeline';
 import History from './pages/History';
 import SubmitRequest from './pages/SubmitRequest';
+import DepartmentDashboard from './pages/DepartmentDashboard';
 import { RailOpsProvider } from './context/RailOpsContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -19,6 +20,8 @@ export default function App() {
           <main className="flex-1 overflow-hidden">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/department" element={<DepartmentDashboard />} />
+              <Route path="/department/:dept" element={<DepartmentDashboard />} />
               <Route path="/requests" element={<SubmitRequest />} />
               <Route path="/integration" element={<DataIntegration />} />
               <Route path="/optimization" element={<OptimizationEngine />} />

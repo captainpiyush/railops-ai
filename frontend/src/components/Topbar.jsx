@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useRailOps } from '../context/RailOpsContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -7,6 +7,8 @@ export default function Topbar() {
   const { demoClock, handleResetDemo } = useRailOps();
   const { theme, setTheme } = useTheme();
   const [resetting, setResetting] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const getNavClass = ({ isActive }) =>
     `font-mono-rail text-[10px] uppercase tracking-wider px-3 py-3 transition-colors ${
@@ -27,6 +29,8 @@ export default function Topbar() {
     }
   };
 
+  const isDeptActive = (code) => location.pathname.toLowerCase().includes(`/department/${code.toLowerCase()}`);
+
   return (
     <div className="bg-slate-900 border-b border-slate-700 h-12 flex items-center px-4 justify-between z-50 transition-colors shadow-xs">
       
@@ -42,6 +46,7 @@ export default function Topbar() {
 
       <nav className="flex items-center gap-1 h-full">
         <NavLink to="/" className={getNavClass}>Dashboard</NavLink>
+        <NavLink to="/department/tms" className={getNavClass}>Dept Dashboards</NavLink>
         <NavLink to="/requests" className={getNavClass}>Requests</NavLink>
         <NavLink to="/integration" className={getNavClass}>Data Integration</NavLink>
         <NavLink to="/optimization" className={getNavClass}>Optimization</NavLink>
@@ -51,12 +56,68 @@ export default function Topbar() {
       </nav>
 
       <div className="flex items-center gap-2.5 flex-shrink-0">
-        <div className="hidden xl:flex gap-1">
-          <span className="font-mono-rail text-[8px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30">TMS</span>
-          <span className="font-mono-rail text-[8px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-400 border border-purple-500/30">SMMS</span>
-          <span className="font-mono-rail text-[8px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">TDMS</span>
-          <span className="font-mono-rail text-[8px] px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-700 dark:text-teal-400 border border-teal-500/30">BDMS</span>
-          <span className="font-mono-rail text-[8px] px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30">COA</span>
+        {/* Interactive Department Dashboard Quick Launch Buttons */}
+        <div className="flex gap-1 items-center bg-slate-800/80 p-0.5 rounded-full border border-slate-700">
+          <button
+            type="button"
+            onClick={() => navigate('/department/tms')}
+            title="Open TMS (Track Management System) Dashboard"
+            className={`font-mono-rail text-[8px] font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+              isDeptActive('tms')
+                ? 'bg-blue-600 text-white border-blue-500 shadow-xs ring-2 ring-blue-400/50'
+                : 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/30 hover:scale-105 active:scale-95'
+            }`}
+          >
+            TMS
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/department/smms')}
+            title="Open SMMS (Signal Maintenance Management System) Dashboard"
+            className={`font-mono-rail text-[8px] font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+              isDeptActive('smms')
+                ? 'bg-purple-600 text-white border-purple-500 shadow-xs ring-2 ring-purple-400/50'
+                : 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/30 hover:scale-105 active:scale-95'
+            }`}
+          >
+            SMMS
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/department/tdms')}
+            title="Open TDMS (Traction Distribution Management System) Dashboard"
+            className={`font-mono-rail text-[8px] font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+              isDeptActive('tdms')
+                ? 'bg-amber-600 text-white border-amber-500 shadow-xs ring-2 ring-amber-400/50'
+                : 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/30 hover:scale-105 active:scale-95'
+            }`}
+          >
+            TDMS
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/department/bdms')}
+            title="Open BDMS (Block Disconnection Management System) Dashboard"
+            className={`font-mono-rail text-[8px] font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+              isDeptActive('bdms')
+                ? 'bg-teal-600 text-white border-teal-500 shadow-xs ring-2 ring-teal-400/50'
+                : 'bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/30 hover:bg-teal-500/30 hover:scale-105 active:scale-95'
+            }`}
+          >
+            BDMS
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/department/coa')}
+            title="Open COA (Control Office Application) Dashboard"
+            className={`font-mono-rail text-[8px] font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+              isDeptActive('coa')
+                ? 'bg-rose-600 text-white border-rose-500 shadow-xs ring-2 ring-rose-400/50'
+                : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30 hover:bg-rose-500/30 hover:scale-105 active:scale-95'
+            }`}
+          >
+            COA
+          </button>
         </div>
 
         {/* Global Light / Dark Theme Toggle Switch */}

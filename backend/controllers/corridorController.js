@@ -1,6 +1,7 @@
 const Corridor = require('../models/Corridor');
 const Block = require('../models/Block');
 const Defect = require('../models/Defect');
+const BlockWindow = require('../models/BlockWindow');
 
 exports.getAllCorridors = async (req, res) => {
   try {
@@ -15,6 +16,15 @@ exports.getAllCorridors = async (req, res) => {
     }));
 
     res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getAllWindows = async (req, res) => {
+  try {
+    const windows = await BlockWindow.find().sort({ corridorId: 1, windowStart: 1 });
+    res.status(200).json(windows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
