@@ -50,18 +50,65 @@ export function canRoleAccess(role, pathname) {
 const UserRoleContext = createContext(null);
 
 export function UserRoleProvider({ children }) {
-  const [role, setRoleState] = useState(() => {
-    try { return localStorage.getItem('railops_role') || 'ALL'; }
-    catch { return 'ALL'; }
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('railops_auth_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
-  const setRole = (newRole) => {
-    try { localStorage.setItem('railops_role', newRole); } catch {}
+  const [role, setRoleState] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem('railops_auth_user');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        if (parsed?.role) return parsed.role;
+      }
+      return localStorage.getItem('railops_role') || 'ALL';
+    } catch {
+      return 'ALL';
+    }
+  });
+
+  const login = ({ role: newRole, username }) => {
+    const userData = {
+      username: username || `${newRole.toLowerCase()}_officer`,
+      role: newRole,
+      loginTime: new Date().toISOString()
+    };
+    try {
+      localStorage.setItem('railops_auth_user', JSON.stringify(userData));
+      localStorage.setItem('railops_role', newRole);
+    } catch {}
+    setUser(userData);
     setRoleState(newRole);
   };
 
+  const logout = () => {
+    try {
+      localStorage.removeItem('railops_auth_user');
+    } catch {}
+    setUser(null);
+  };
+
+  const setRole = (newRole) => {
+    try {
+      localStorage.setItem('railops_role', newRole);
+      if (user) {
+        const updated = { ...user, role: newRole };
+        localStorage.setItem('railops_auth_user', JSON.stringify(updated));
+        setUser(updated);
+      }
+    } catch {}
+    setRoleState(newRole);
+  };
+
+  const isAuthenticated = Boolean(user);
+
   return (
-    <UserRoleContext.Provider value={{ role, setRole }}>
+    <UserRoleContext.Provider value={{ user, role, setRole, login, logout, isAuthenticated }}>
       {children}
     </UserRoleContext.Provider>
   );

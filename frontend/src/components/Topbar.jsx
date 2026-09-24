@@ -7,7 +7,7 @@ import { useUserRole, ROLES, ROLE_META } from '../context/UserRoleContext';
 export default function Topbar() {
   const { handleResetDemo } = useRailOps();
   const { theme, setTheme } = useTheme();
-  const { role, setRole } = useUserRole();
+  const { role, setRole, logout } = useUserRole();
   const [resetting, setResetting]   = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const navigate  = useNavigate();
@@ -49,6 +49,11 @@ export default function Topbar() {
     setPickerOpen(false);
     const home = ROLE_META[newRole]?.home || '/';
     navigate(home);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   // ── Nav items rendered per role ──────────────────────────────────────────
@@ -146,50 +151,67 @@ export default function Topbar() {
       {/* ── Right-side controls ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 flex-shrink-0">
 
-        {/* ── Role Switcher ──────────────────────────────────────────── */}
-        <div className="relative" ref={pickerRef}>
-          <button
-            type="button"
-            onClick={() => setPickerOpen(o => !o)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-lg border font-mono-rail text-[10px] font-bold transition-all cursor-pointer bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
-            title="Switch active role / department"
-          >
-            <span>Role: {role}</span>
-            <span className="text-[9px] opacity-70">▼</span>
-          </button>
+        {/* ── Role Switcher (ONLY available for Admin / ALL) ─────────────── */}
+        {role === 'ALL' ? (
+          <div className="relative" ref={pickerRef}>
+            <button
+              type="button"
+              onClick={() => setPickerOpen(o => !o)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg border font-mono-rail text-[10px] font-bold transition-all cursor-pointer bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
+              title="Switch active role / department (Admin only)"
+            >
+              <span>Role: {role}</span>
+              <span className="text-[9px] opacity-70">v</span>
+            </button>
 
-          {pickerOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-60 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden text-slate-800">
-              <div className="px-3 py-2 border-b border-slate-100 bg-white">
-                <span className="font-mono-rail text-[10px] text-slate-500 uppercase tracking-wider font-bold">
-                  Switch Role / Department
-                </span>
+            {pickerOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-60 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden text-slate-800">
+                <div className="px-3 py-2 border-b border-slate-100 bg-white">
+                  <span className="font-mono-rail text-[10px] text-slate-500 uppercase tracking-wider font-bold">
+                    Switch Role / Department
+                  </span>
+                </div>
+                <div className="bg-white p-1 space-y-0.5">
+                  {Object.values(ROLES).map(r => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => handleRoleSwitch(r)}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-left rounded-lg transition-all cursor-pointer bg-white ${
+                        r === role
+                          ? 'bg-slate-100 text-slate-900 font-bold border-l-4 border-l-slate-800'
+                          : 'hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-mono-rail text-[11px] font-bold text-slate-900">{r}</div>
+                        <div className="font-mono-rail text-[9px] text-slate-500">{ROLE_META[r]?.label}</div>
+                      </div>
+                      {r === role && (
+                        <span className="font-mono-rail text-[9px] text-slate-800 font-bold">Active</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="bg-white p-1 space-y-0.5">
-                {Object.values(ROLES).map(r => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => handleRoleSwitch(r)}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-left rounded-lg transition-all cursor-pointer bg-white ${
-                      r === role
-                        ? 'bg-slate-100 text-slate-900 font-bold border-l-4 border-l-slate-800'
-                        : 'hover:bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-mono-rail text-[11px] font-bold text-slate-900">{r}</div>
-                      <div className="font-mono-rail text-[9px] text-slate-500">{ROLE_META[r]?.label}</div>
-                    </div>
-                    {r === role && (
-                      <span className="font-mono-rail text-[9px] text-slate-800 font-bold">Active</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          /* Fixed Department Badge for non-admin roles (NO dropdown menu) */
+          <div className="flex items-center px-2.5 py-1 rounded-lg border font-mono-rail text-[10px] font-bold bg-slate-800 text-slate-200 border-slate-700">
+            <span>Dept: {role}</span>
+          </div>
+        )}
+
+        {/* ── Logout Button ─────────────────────────────────────────────── */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex items-center gap-1 font-mono-rail text-[10px] px-2.5 py-1 rounded bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-400 border border-slate-700 hover:border-red-500/40 transition-all cursor-pointer"
+          title="Sign out of current session"
+        >
+          <span>Logout</span>
+        </button>
 
         {/* ── Theme Toggle ─────────────────────────────────────────────── */}
         <div className="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-0.5 font-mono-rail text-[10px] shadow-xs">
