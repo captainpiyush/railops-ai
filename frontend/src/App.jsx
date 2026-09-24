@@ -19,12 +19,15 @@ import { UserRoleProvider, useUserRole, canRoleAccess, ROLE_META } from './conte
  * home page if they try to access a route they are not allowed to visit.
  */
 function ProtectedRoute({ children }) {
-  const { role, isAuthenticated } = useUserRole();
+  const { role, isAuthenticated, isAdmin } = useUserRole();
   const { pathname } = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
+  // Admin user has full access to all pages and department views
+  if (isAdmin) return children;
 
   // Only ALL is unrestricted
   if (role === 'ALL') return children;
@@ -47,9 +50,9 @@ function ProtectedRoute({ children }) {
  * to their designated home page so they never land on the main dashboard.
  */
 function HomeRedirect() {
-  const { role, isAuthenticated } = useUserRole();
+  const { role, isAuthenticated, isAdmin } = useUserRole();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (role === 'ALL' || role === 'COA') return <Dashboard />;
+  if (role === 'ALL' || (isAdmin && role === 'ALL') || role === 'COA') return <Dashboard />;
   const home = ROLE_META[role]?.home;
   return home ? <Navigate to={home} replace /> : <Dashboard />;
 }

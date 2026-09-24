@@ -7,7 +7,7 @@ import { useUserRole, ROLES, ROLE_META } from '../context/UserRoleContext';
 export default function Topbar() {
   const { handleResetDemo } = useRailOps();
   const { theme, setTheme } = useTheme();
-  const { role, setRole, logout } = useUserRole();
+  const { role, setRole, logout, isAdmin } = useUserRole();
   const [resetting, setResetting]   = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const navigate  = useNavigate();
@@ -151,14 +151,14 @@ export default function Topbar() {
       {/* ── Right-side controls ──────────────────────────────────────── */}
       <div className="flex items-center gap-2 flex-shrink-0">
 
-        {/* ── Role Switcher (ONLY available for Admin / ALL) ─────────────── */}
-        {role === 'ALL' ? (
+        {/* ── Role Switcher (Available for Admin / ALL) ─────────────── */}
+        {isAdmin ? (
           <div className="relative" ref={pickerRef}>
             <button
               type="button"
               onClick={() => setPickerOpen(o => !o)}
               className="flex items-center gap-1.5 px-3 py-1 rounded-lg border font-mono-rail text-[10px] font-bold transition-all cursor-pointer bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700"
-              title="Switch active role / department (Admin only)"
+              title="Switch active role / department (Admin)"
             >
               <span>Role: {role}</span>
               <span className="text-[9px] opacity-70">v</span>
@@ -247,8 +247,8 @@ export default function Topbar() {
           <span className="text-slate-300">09 Sep 2026, 10:00</span>
         </div>
 
-        {/* ── Reset Demo (ALL/COA only) ─────────────────────────────── */}
-        {(role === 'ALL' || role === 'COA') && (
+        {/* ── Reset Demo (Admin/COA) ─────────────────────────────── */}
+        {(isAdmin || role === 'ALL' || role === 'COA') && (
           <button
             onClick={onResetClick}
             disabled={resetting}

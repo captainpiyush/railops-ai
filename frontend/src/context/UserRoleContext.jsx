@@ -59,14 +59,20 @@ export function UserRoleProvider({ children }) {
     }
   });
 
+  // Preserve admin status: if user logged in as ALL or username is 'admin', they are an Admin
+  const authRole = user?.authRole || (user?.username === 'admin' ? 'ALL' : user?.role) || 'ALL';
+  const isAdmin = authRole === 'ALL';
+
   const [role, setRoleState] = useState(() => {
     try {
+      const storedRole = localStorage.getItem('railops_role');
+      if (storedRole) return storedRole;
       const storedUser = localStorage.getItem('railops_auth_user');
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
         if (parsed?.role) return parsed.role;
       }
-      return localStorage.getItem('railops_role') || 'ALL';
+      return 'ALL';
     } catch {
       return 'ALL';
     }
@@ -75,6 +81,7 @@ export function UserRoleProvider({ children }) {
   const login = ({ role: newRole, username }) => {
     const userData = {
       username: username || `${newRole.toLowerCase()}_officer`,
+      authRole: newRole,
       role: newRole,
       loginTime: new Date().toISOString()
     };
@@ -89,14 +96,17 @@ export function UserRoleProvider({ children }) {
   const logout = () => {
     try {
       localStorage.removeItem('railops_auth_user');
+      localStorage.removeItem('railops_role');
     } catch {}
     setUser(null);
+    setRoleState('ALL');
   };
 
   const setRole = (newRole) => {
     try {
       localStorage.setItem('railops_role', newRole);
       if (user) {
+        // Keep authRole intact so admin privileges are never lost!
         const updated = { ...user, role: newRole };
         localStorage.setItem('railops_auth_user', JSON.stringify(updated));
         setUser(updated);
@@ -108,7 +118,7 @@ export function UserRoleProvider({ children }) {
   const isAuthenticated = Boolean(user);
 
   return (
-    <UserRoleContext.Provider value={{ user, role, setRole, login, logout, isAuthenticated }}>
+    <UserRoleContext.Provider value={{ user, role, authRole, isAdmin, setRole, login, logout, isAuthenticated }}>
       {children}
     </UserRoleContext.Provider>
   );
