@@ -345,6 +345,8 @@ export default function DepartmentDashboard() {
       if (selectedDayFilter !== 'ALL' && r.rawDay !== selectedDayFilter) return false;
       return true;
     });
+  }, [corridorWindows, blocks, effectiveNow, selectedCorridorFilter, selectedDayFilter]);
+
   // ──────────────────────────────────────────────────────────────────────────
   // 4. TABLE 4: DEPARTMENT HISTORY & AUDIT TRAIL
   // ──────────────────────────────────────────────────────────────────────────
