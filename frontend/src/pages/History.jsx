@@ -136,7 +136,7 @@ export default function History() {
               OPTIMIZATION AUDIT TRAIL: MULTI-DEPARTMENT CONSOLIDATIONS
             </span>
             <span className="font-mono-rail text-[9px] text-emerald-400">
-              ✓ Verified Constraint-Engine Plans
+              Verified Constraint-Engine Plans
             </span>
           </div>
 

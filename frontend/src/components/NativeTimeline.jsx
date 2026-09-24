@@ -129,7 +129,7 @@ export default function NativeTimeline({
       {/* Subheader */}
       <div className="flex items-center justify-between border-b border-slate-800/80 pb-1">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs">🔧</span>
+          <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
           <span className="font-mono-rail text-[11px] font-bold text-slate-200 uppercase tracking-wider">
             MAINTENANCE BLOCK POSSESSION SCHEDULE
           </span>
@@ -190,7 +190,7 @@ export default function NativeTimeline({
                   />
                 )}
 
-                {/* 1. 🤖 AI RECOMMENDED BUNDLED BLOCK ON COR-01 */}
+                {/* 1. AI RECOMMENDED BUNDLED BLOCK ON COR-01 */}
                 {isCor01 && showAiBlockOnCor01 && (
                   <div
                     onClick={() =>
@@ -216,10 +216,9 @@ export default function NativeTimeline({
                       width: `${(6 / 24) * 100}%`,
                       zIndex: 25,
                     }}
-                    title="🤖 AI RECOMMENDED: 02:00–08:00 | Track + Signalling + Traction (6h, Score 78, Feasible)"
+                    title="AI RECOMMENDED: 02:00–08:00 | Track + Signalling + Traction (6h, Score 78, Feasible)"
                   >
                     <span className="font-mono-rail text-[8px] font-extrabold truncate leading-none flex items-center gap-1">
-                      <span>🤖</span>
                       <span className="bg-emerald-500 text-slate-950 px-1 py-0.2 rounded text-[7px] font-black">
                         AI BLOCK
                       </span>
@@ -321,13 +320,11 @@ export default function NativeTimeline({
                           width: `${width}%`,
                           zIndex: hasConflict ? 22 : 12 + idx,
                         }}
-                        title={`🔧 ${block.blockCode || 'Block'} | ${block.department} | ${timeLabel}${hasConflict ? ` [⚠ CONFLICT: ${overlapMins}m]` : ''}`}
+                        title={`${block.blockCode || 'Block'} | ${block.department} | ${timeLabel}${hasConflict ? ` [CONFLICT: ${overlapMins}m]` : ''}`}
                       >
                         <span className="font-mono-rail text-[8px] font-bold truncate leading-none flex items-center gap-1">
-                          {hasConflict ? (
-                            <span className="text-red-400 font-extrabold animate-pulse">⚠</span>
-                          ) : (
-                            <span>🔧</span>
+                          {hasConflict && (
+                            <span className="text-red-400 font-extrabold animate-pulse">!</span>
                           )}
                           <span>{block.blockCode || 'BLK'}</span>
                           <span className="opacity-80">({deptInfo.label})</span>
@@ -349,7 +346,6 @@ export default function NativeTimeline({
           <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-sm w-full p-4 shadow-2xl flex flex-col gap-3 font-mono-rail">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <div className="flex items-center gap-2">
-                <span className="text-base">{selectedBlock.isAi ? '🤖' : '🔧'}</span>
                 <span className="text-xs font-bold text-slate-100">
                   {selectedBlock.isAi ? 'AI RECOMMENDED BLOCK' : `MAINTENANCE: ${selectedBlock.blockCode}`}
                 </span>
@@ -358,7 +354,7 @@ export default function NativeTimeline({
                 onClick={() => setSelectedBlock(null)}
                 className="text-slate-400 hover:text-slate-200 text-sm font-bold cursor-pointer"
               >
-                ✕
+                X
               </button>
             </div>
 
@@ -406,10 +402,10 @@ export default function NativeTimeline({
                       : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                   }`}>
                     {selectedBlock.hasConflict
-                      ? `⚠️ CONFLICT (${selectedBlock.track || 'UP Main'})`
+                      ? `CONFLICT (${selectedBlock.track || 'UP Main'})`
                       : selectedBlock.isSeparated
-                      ? '✓ CLEAR (Separated Track)'
-                      : '✓ CLEAR'}
+                      ? 'CLEAR (Separated Track)'
+                      : 'CLEAR'}
                   </span>
                 </div>
                 <div className={`p-2 rounded border text-[9px] leading-relaxed ${
@@ -422,7 +418,7 @@ export default function NativeTimeline({
               </div>
               {selectedBlock.isAi && (
                 <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded text-emerald-300 text-[9px] flex flex-col gap-1">
-                  <div className="font-bold">✓ Validated Constraint Engine Score: {selectedBlock.score}/100</div>
+                  <div className="font-bold">Validated Constraint Engine Score: {selectedBlock.score}/100</div>
                   <div className="text-amber-300 font-bold">{selectedBlock.timeSaved} vs separate uncoordinated blocks</div>
                 </div>
               )}

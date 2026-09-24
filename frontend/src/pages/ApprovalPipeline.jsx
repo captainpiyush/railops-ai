@@ -180,7 +180,7 @@ export default function ApprovalPipeline() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <span>⚡ COORDINATED BLOCK PACKAGE (AI-RECOMMENDED)</span>
+            <span>COORDINATED BLOCK PACKAGE (AI-RECOMMENDED)</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           </button>
           <button
@@ -203,8 +203,8 @@ export default function ApprovalPipeline() {
       {/* ── VIEW 1: COORDINATED BLOCK PACKAGE (REQUIREMENT 26) ── */}
       {activeView === 'coordinated' && !coordinatedPackage && (
         <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-900 border border-slate-800 rounded-xl text-center">
-          <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold mb-3 border border-emerald-500/40">
-            ✓
+          <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold mb-3 border border-emerald-500/40">
+            OK
           </div>
           <div className="font-mono-rail text-base font-bold text-slate-100">
             All AI-Proposed Packages Committed to Schedule
@@ -301,13 +301,13 @@ export default function ApprovalPipeline() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-800/50 border border-slate-700/70 rounded-lg p-3 font-mono-rail text-[10px]">
                 <div className="text-slate-400 font-bold mb-1">PASSENGER & FREIGHT IMPACT</div>
-                <div className="text-emerald-400">✓ {coordinatedPackage.trainImpact}</div>
-                <div className="text-slate-300 mt-0.5">✓ {coordinatedPackage.freightImpact}</div>
+                <div className="text-emerald-400">{coordinatedPackage.trainImpact}</div>
+                <div className="text-slate-300 mt-0.5">{coordinatedPackage.freightImpact}</div>
               </div>
               <div className="bg-slate-800/50 border border-slate-700/70 rounded-lg p-3 font-mono-rail text-[10px]">
                 <div className="text-slate-400 font-bold mb-1">CONFLICTS & SAFETY CLEARANCE</div>
-                <div className="text-emerald-400">✓ {coordinatedPackage.conflicts}</div>
-                <div className="text-slate-300 mt-0.5">✓ 20-minute safety buffer verified before and after block</div>
+                <div className="text-emerald-400">{coordinatedPackage.conflicts}</div>
+                <div className="text-slate-300 mt-0.5">20-minute safety buffer verified before and after block</div>
               </div>
             </div>
 
@@ -322,7 +322,7 @@ export default function ApprovalPipeline() {
                   disabled={actionLoading || rejectLoading || planApproved}
                   className="font-mono-rail text-xs font-bold px-5 py-3 rounded-lg border border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-500/60 shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  ✕ REJECT
+                  REJECT
                 </button>
                 <button
                   onClick={handleApproveCoordinatedPackage}
@@ -333,7 +333,7 @@ export default function ApprovalPipeline() {
                       : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer'
                   }`}
                 >
-                  {actionLoading ? 'COMMITTING TO SCHEDULE...' : planApproved ? '✓ PACKAGE APPROVED & COMMITTED' : '✓ APPROVE & COMMIT BLOCK TO SCHEDULE'}
+                  {actionLoading ? 'COMMITTING TO SCHEDULE...' : planApproved ? 'PACKAGE APPROVED & COMMITTED' : 'APPROVE & COMMIT BLOCK TO SCHEDULE'}
                 </button>
               </div>
             </div>
@@ -342,7 +342,7 @@ export default function ApprovalPipeline() {
           {/* Right Explanation Column */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-xl">
             <div className="font-mono-rail text-xs font-bold text-slate-200 border-b border-slate-800 pb-2 flex items-center gap-2">
-              <span className="text-emerald-400">💡</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
               <span>AI DECISION EXPLANATION</span>
             </div>
 
@@ -352,15 +352,15 @@ export default function ApprovalPipeline() {
 
             <div className="flex flex-col gap-2 font-mono-rail text-[9px] text-slate-400 mt-2">
               <div className="flex items-center gap-2 bg-slate-800/40 p-2 rounded">
-                <span className="text-emerald-400 font-bold">✓</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                 <span>Track gang, OHE tower wagon, and signal technicians work in synchronized corridor zone</span>
               </div>
               <div className="flex items-center gap-2 bg-slate-800/40 p-2 rounded">
-                <span className="text-emerald-400 font-bold">✓</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                 <span>Eliminates 3 separate corridor shutdowns on consecutive days</span>
               </div>
               <div className="flex items-center gap-2 bg-slate-800/40 p-2 rounded">
-                <span className="text-emerald-400 font-bold">✓</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                 <span>Zero passenger train regulation compared to daytime block execution</span>
               </div>
             </div>
@@ -460,7 +460,7 @@ export default function ApprovalPipeline() {
             <div className="flex items-start justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-sm">
-                  ✕
+                  X
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-red-400 uppercase tracking-wider">
@@ -476,7 +476,7 @@ export default function ApprovalPipeline() {
                 onClick={handleCloseRejectModal}
                 className="text-slate-400 hover:text-slate-200 text-sm font-bold p-1 rounded hover:bg-slate-800 cursor-pointer"
               >
-                ✕
+                X
               </button>
             </div>
 
@@ -524,7 +524,7 @@ export default function ApprovalPipeline() {
               />
               {rejectionError && (
                 <span className="text-red-400 text-[11px] font-semibold flex items-center gap-1 mt-1">
-                  <span>⚠</span> {rejectionError}
+                  {rejectionError}
                 </span>
               )}
             </div>

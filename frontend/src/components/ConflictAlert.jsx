@@ -3,7 +3,7 @@ export default function ConflictAlert({ conflicts = [] }) {
 
   return (
     <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-      <h3 className="font-mono-rail text-xs text-red-400 font-bold mb-2">⚠ CONFLICTS DETECTED</h3>
+      <h3 className="font-mono-rail text-xs text-red-400 font-bold mb-2">CONFLICTS DETECTED</h3>
       <div className="flex flex-col gap-2 max-h-32 overflow-y-auto">
         {conflicts.map((c, i) => (
           <div key={i} className="flex items-start gap-2 bg-slate-800/50 p-2 rounded">

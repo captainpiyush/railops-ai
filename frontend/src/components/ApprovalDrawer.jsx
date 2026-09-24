@@ -5,7 +5,7 @@ export default function ApprovalDrawer({ defect, pendingCount, onApprove, onReje
   if (!defect) {
     return (
       <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 h-full flex items-center justify-center shadow-xs">
-        <div className="text-emerald-500 font-mono-rail text-sm">✓ All defects processed</div>
+        <div className="text-emerald-500 font-mono-rail text-sm">All defects processed</div>
       </div>
     );
   }
@@ -74,13 +74,13 @@ export default function ApprovalDrawer({ defect, pendingCount, onApprove, onReje
           onClick={() => onApprove(defect._id)}
           className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-mono-rail text-xs font-bold py-2 rounded-lg transition-colors"
         >
-          ▶ APPROVE & EXECUTE
+          APPROVE & EXECUTE
         </button>
         <button
           onClick={() => onReject(defect._id)}
           className="w-full border border-red-500/40 text-red-400 hover:bg-red-500/10 font-mono-rail text-xs py-2 rounded-lg transition-colors"
         >
-          ✕ REJECT
+          REJECT
         </button>
         {pendingCount > 1 && (
           <div className="text-center font-mono-rail text-[10px] text-slate-500 mt-1">

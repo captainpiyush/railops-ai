@@ -21,8 +21,13 @@ function ProtectedRoute({ children }) {
   const { role } = useUserRole();
   const { pathname } = useLocation();
 
-  // Unrestricted roles
-  if (role === 'ALL' || role === 'COA') return children;
+  // Only ALL is unrestricted
+  if (role === 'ALL') return children;
+
+  // COA cannot access requests
+  if (role === 'COA' && pathname.startsWith('/requests')) {
+    return <Navigate to="/" replace />;
+  }
 
   if (!canRoleAccess(role, pathname)) {
     const home = ROLE_META[role]?.home || '/';

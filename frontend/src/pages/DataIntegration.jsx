@@ -14,7 +14,7 @@ const PIPELINE_SOURCES = [
 ];
 
 export default function DataIntegration() {
-  const { defects = [], blocks = [], schedules = [], refreshData } = useRailOps();
+  const { defects = [], blocks = [], schedules = [], activeRecommendation, refreshData } = useRailOps();
   const [metrics, setMetrics] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [lastSyncTime, setLastSyncTime] = useState(null);
@@ -158,9 +158,12 @@ export default function DataIntegration() {
                 {(defects || []).length} RECORDS ACTIVE
               </span>
             </div>
-            <span className="font-mono-rail text-[9px] text-slate-500">
-              Auto-synchronized with AI Optimization Engine
-            </span>
+            <div className="flex items-center gap-3 font-mono-rail text-[9px]">
+              <span className="flex items-center gap-1 text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                AI Suggested Task / Bundle Highlighted
+              </span>
+            </div>
           </div>
 
           <div className="flex-1 overflow-auto p-0">
@@ -173,38 +176,63 @@ export default function DataIntegration() {
                   <th className="p-3 font-mono-rail text-[9px] uppercase text-slate-400 border-b border-slate-800">Dept</th>
                   <th className="p-3 font-mono-rail text-[9px] uppercase text-slate-400 border-b border-slate-800">Priority</th>
                   <th className="p-3 font-mono-rail text-[9px] uppercase text-slate-400 border-b border-slate-800">Corridor</th>
+                  <th className="p-3 font-mono-rail text-[9px] uppercase text-slate-400 border-b border-slate-800 text-right">AI Recommendation</th>
                 </tr>
               </thead>
               <tbody>
-                {(defects || []).slice(0, 50).map(d => (
-                  <tr key={d._id} className="border-b border-slate-800/60 hover:bg-slate-800/40 transition-colors">
-                    <td className="p-3 font-mono-rail text-[10px] text-emerald-400 font-bold">
-                      {d.defectCode || d._id.substring(0, 8)}
-                    </td>
-                    <td className="p-3">
-                      <DataSourceBadge source={d.source} />
-                    </td>
-                    <td className="p-3 font-mono-rail text-[10px] text-slate-300">
-                      {d.assetId}
-                    </td>
-                    <td className="p-3 font-mono-rail text-[10px] text-slate-400">
-                      {d.department}
-                    </td>
-                    <td className="p-3">
-                      <span className={`font-mono-rail text-[8px] px-2 py-0.5 rounded-full border font-semibold ${
-                        d.priority === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                        d.priority === 'HIGH' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                        d.priority === 'MEDIUM' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-                        'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                      }`}>
-                        {d.priority}
-                      </span>
-                    </td>
-                    <td className="p-3 font-mono-rail text-[10px] text-slate-500">
-                      {d.corridorId || 'COR-01'}
-                    </td>
-                  </tr>
-                ))}
+                {(defects || []).slice(0, 50).map(d => {
+                  const isAiSuggested =
+                    d.status === 'BUNDLED' ||
+                    d.status === 'SCHEDULED' ||
+                    d.source === 'AI_OPTIMIZED' ||
+                    activeRecommendation?.taskSummary?.some(t => t.defectCode === d.defectCode || t._id === d._id);
+
+                  return (
+                    <tr
+                      key={d._id}
+                      className={`border-b border-slate-800/60 transition-colors ${
+                        isAiSuggested
+                          ? 'bg-emerald-950/40 border-l-4 border-l-emerald-400 hover:bg-emerald-950/60'
+                          : 'hover:bg-slate-800/40'
+                      }`}
+                    >
+                      <td className="p-3 font-mono-rail text-[10px] text-emerald-400 font-bold">
+                        {d.defectCode || d._id.substring(0, 8)}
+                      </td>
+                      <td className="p-3">
+                        <DataSourceBadge source={d.source} />
+                      </td>
+                      <td className="p-3 font-mono-rail text-[10px] text-slate-300">
+                        {d.assetId}
+                      </td>
+                      <td className="p-3 font-mono-rail text-[10px] text-slate-400">
+                        {d.department}
+                      </td>
+                      <td className="p-3">
+                        <span className={`font-mono-rail text-[8px] px-2 py-0.5 rounded-full border font-semibold ${
+                          d.priority === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                          d.priority === 'HIGH' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                          d.priority === 'MEDIUM' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                          'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                        }`}>
+                          {d.priority}
+                        </span>
+                      </td>
+                      <td className="p-3 font-mono-rail text-[10px] text-slate-500">
+                        {d.corridorId || 'COR-01'}
+                      </td>
+                      <td className="p-3 text-right">
+                        {isAiSuggested ? (
+                          <span className="font-mono-rail text-[8px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold whitespace-nowrap">
+                            AI SUGGESTED BUNDLE
+                          </span>
+                        ) : (
+                          <span className="font-mono-rail text-[8px] text-slate-500">Standard</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

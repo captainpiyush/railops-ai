@@ -345,12 +345,65 @@ export default function DepartmentDashboard() {
       if (selectedDayFilter !== 'ALL' && r.rawDay !== selectedDayFilter) return false;
       return true;
     });
-  }, [corridorWindows, blocks, effectiveNow, selectedCorridorFilter, selectedDayFilter]);
+  // ──────────────────────────────────────────────────────────────────────────
+  // 4. TABLE 4: DEPARTMENT HISTORY & AUDIT TRAIL
+  // ──────────────────────────────────────────────────────────────────────────
+  const departmentHistoryRows = useMemo(() => {
+    const baselineHistory = [
+      {
+        planVersion: 'PLAN-2026-09-03-01',
+        blockCode: 'BLK-COORD-01',
+        corridorId: 'COR-01',
+        departments: 'Track + Signalling + Traction',
+        optimizedWindow: '02:00 - 08:00 (Night Shift)',
+        timeSaved: '5.0 Hours Saved',
+        status: 'SCHEDULED',
+        approvalState: 'APPROVED (Sr. DOM)'
+      },
+      {
+        planVersion: 'PLAN-2026-09-02-04',
+        blockCode: 'BLK-COORD-04',
+        corridorId: 'COR-02',
+        departments: 'Track + Signalling',
+        optimizedWindow: '01:30 - 05:30 (Early Night)',
+        timeSaved: '3.5 Hours Saved',
+        status: 'COMPLETED',
+        approvalState: 'APPROVED (Dy. COM)'
+      },
+      {
+        planVersion: 'PLAN-2026-09-01-02',
+        blockCode: 'BLK-COORD-02',
+        corridorId: 'COR-03',
+        departments: 'Traction + Track',
+        optimizedWindow: '02:00 - 06:30 (Off-Peak Night)',
+        timeSaved: '3.5 Hours Saved',
+        status: 'COMPLETED',
+        approvalState: 'APPROVED (Sr. DOM)'
+      }
+    ];
+
+    const dynamicHistory = recommendationHistory.map(r => ({
+      planVersion: r.recommendationId,
+      blockCode: r.resultingBlockId?.blockCode || 'BLK-HIST',
+      corridorId: r.corridorId,
+      departments: r.departments?.join(' + ') || 'Track',
+      optimizedWindow: `${new Date(r.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })} - ${new Date(r.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}`,
+      timeSaved: r.departments?.length >= 3 ? '5.0 Hours Saved' : '3.0 Hours Saved',
+      status: r.status,
+      approvalState: r.status === 'ACCEPTED' || r.status === 'SCHEDULED' ? 'APPROVED' : r.status
+    }));
+
+    const combined = dynamicHistory.length > 0 ? dynamicHistory : baselineHistory;
+    return combined.filter(h => {
+      if (activeDeptObj.code === 'COA') return true;
+      return activeDeptObj.deptFilter.some(df => h.departments.toLowerCase().includes(df.toLowerCase()));
+    });
+  }, [recommendationHistory, activeDeptObj]);
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950 text-slate-100 transition-colors">
       
-      {/* ── HEADER & DEPARTMENT SELECTOR TABS ── */}
+      {/* ── HEADER ── */}
       <div className="bg-slate-900 border-b border-slate-800 px-4 py-3">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div>
@@ -367,25 +420,19 @@ export default function DepartmentDashboard() {
             </p>
           </div>
 
-          {/* Quick Department Switcher Tabs */}
-          <div className="flex items-center flex-wrap gap-1.5 bg-slate-950/70 p-1 rounded-lg border border-slate-800">
-            {DEPARTMENTS.map(d => {
-              const isActive = d.key === activeDeptObj.key;
-              return (
-                <button
-                  key={d.key}
-                  onClick={() => navigate(`/department/${d.key}`)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-mono-rail text-xs transition-all cursor-pointer ${
-                    isActive
-                      ? `${d.badgeClass} font-bold shadow-xs ring-1 ring-white/20`
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                  }`}
-                >
-                  <span>{d.code}</span>
-                  <span className="text-[10px] hidden sm:inline opacity-80">({d.deptFilter[0]})</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/optimization')}
+              className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-mono-rail font-bold text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Optimization Engine</span>
+            </button>
+            <button
+              onClick={() => navigate('/history')}
+              className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-rail font-bold text-xs border border-slate-700 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>History</span>
+            </button>
           </div>
         </div>
 
@@ -399,11 +446,11 @@ export default function DepartmentDashboard() {
               className="bg-slate-800 border border-slate-700 text-slate-200 rounded px-2.5 py-1 text-xs font-mono-rail focus:outline-none focus:border-blue-500"
             >
               <option value="ALL">All Trunk Corridors (5)</option>
-              <option value="COR-01">COR-01: Delhi – Mumbai</option>
-              <option value="COR-02">COR-02: Delhi – Howrah</option>
-              <option value="COR-03">COR-03: Mumbai – Chennai</option>
-              <option value="COR-04">COR-04: Howrah – Chennai</option>
-              <option value="COR-05">COR-05: Delhi – Chennai</option>
+              <option value="COR-01">COR-01: Delhi - Mumbai</option>
+              <option value="COR-02">COR-02: Delhi - Howrah</option>
+              <option value="COR-03">COR-03: Mumbai - Chennai</option>
+              <option value="COR-04">COR-04: Howrah - Chennai</option>
+              <option value="COR-05">COR-05: Delhi - Chennai</option>
             </select>
 
             <span className="font-mono-rail text-slate-400 text-[11px] ml-2">DAY:</span>
@@ -426,12 +473,6 @@ export default function DepartmentDashboard() {
               onChange={e => setTaskSearchQuery(e.target.value)}
               className="bg-slate-800 border border-slate-700 text-slate-200 rounded px-3 py-1 text-xs font-mono-rail focus:outline-none focus:border-blue-500 w-56 sm:w-64 placeholder-slate-500"
             />
-            <button
-              onClick={() => navigate('/optimization')}
-              className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-mono-rail font-bold text-xs transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>⚡ Optimization Engine</span>
-            </button>
           </div>
         </div>
       </div>
@@ -535,7 +576,7 @@ export default function DepartmentDashboard() {
                       {/* Column 2: Window Time */}
                       <td className="py-3 px-4 text-emerald-400 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 font-medium">
-                          <span>⏱ {plan.windowTime}</span>
+                          <span>{plan.windowTime}</span>
                         </div>
                       </td>
 
@@ -626,7 +667,7 @@ export default function DepartmentDashboard() {
                 {unallocatedTasks.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-slate-500 text-xs">
-                      ✓ All maintenance tasks for this department are allocated or resolved. No pending block requests!
+                      All maintenance tasks for this department are allocated or resolved. No pending block requests.
                     </td>
                   </tr>
                 ) : (
@@ -780,7 +821,7 @@ export default function DepartmentDashboard() {
                       {/* Column 2: Window Time with Day */}
                       <td className="py-3 px-4 text-slate-200 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 font-medium text-emerald-400">
-                          <span>📅 {row.windowTimeWithDay}</span>
+                          <span>{row.windowTimeWithDay}</span>
                         </div>
                       </td>
 
@@ -820,6 +861,84 @@ export default function DepartmentDashboard() {
                       {/* Window Purpose */}
                       <td className="py-3 px-4 text-right text-slate-400 text-[11px] whitespace-nowrap">
                         {row.description}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ═════════════════════════════════════════════════════════════════════ */}
+        {/* 4. TABLE 4: DEPARTMENT HISTORY TABLE                                  */}
+        {/* ═════════════════════════════════════════════════════════════════════ */}
+        <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-xs">
+          <div className="px-4 py-3 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-cyan-500"></div>
+              <h2 className="font-mono-rail font-bold text-sm text-slate-100 tracking-wide uppercase">
+                {activeDeptObj.code} Execution &amp; Planning History
+              </h2>
+              <span className="font-mono-rail text-[11px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                {departmentHistoryRows.length} Historical Records
+              </span>
+            </div>
+            <button
+              onClick={() => navigate('/history')}
+              className="text-xs text-blue-400 hover:text-blue-300 font-mono-rail underline cursor-pointer"
+            >
+              Open Full Audit Ledger
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-800/80 text-slate-400 font-mono-rail uppercase text-[10px] tracking-wider border-b border-slate-700">
+                  <th className="py-2.5 px-4 font-semibold">Plan Version</th>
+                  <th className="py-2.5 px-4 font-semibold">Block ID</th>
+                  <th className="py-2.5 px-4 font-semibold">Corridor No.</th>
+                  <th className="py-2.5 px-4 font-semibold">Departments Coordinated</th>
+                  <th className="py-2.5 px-4 font-semibold">Optimized Window</th>
+                  <th className="py-2.5 px-4 font-semibold">Savings</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Approval Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800 font-mono-rail">
+                {departmentHistoryRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-500 text-xs">
+                      No past records found for this department.
+                    </td>
+                  </tr>
+                ) : (
+                  departmentHistoryRows.map((h, idx) => (
+                    <tr key={h.planVersion || idx} className="hover:bg-slate-800/50 transition-colors">
+                      <td className="py-3 px-4 font-bold text-cyan-400 whitespace-nowrap">
+                        {h.planVersion}
+                      </td>
+                      <td className="py-3 px-4 text-slate-200 font-bold whitespace-nowrap">
+                        {h.blockCode}
+                      </td>
+                      <td className="py-3 px-4 text-slate-300 whitespace-nowrap">
+                        {h.corridorId}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30 text-[9px]">
+                          {h.departments}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-emerald-400 whitespace-nowrap">
+                        {h.optimizedWindow}
+                      </td>
+                      <td className="py-3 px-4 text-amber-400 font-bold whitespace-nowrap">
+                        {h.timeSaved}
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px]">
+                          {h.approvalState}
+                        </span>
                       </td>
                     </tr>
                   ))

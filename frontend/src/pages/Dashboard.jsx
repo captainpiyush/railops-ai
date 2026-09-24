@@ -120,7 +120,7 @@ export default function Dashboard() {
 
       setToast({
         visible: true,
-        message: `✓ Conflict auto-resolved: Block shifted +30 mins`,
+        message: `Conflict auto-resolved: Block shifted +30 mins`,
         type: 'success',
       });
       setActiveConflict(null);
@@ -162,13 +162,13 @@ export default function Dashboard() {
       if (result.success && result.status === 'SCHEDULED') {
         setToast({
           visible: true,
-          message: `✓ Coordinated Block ${result.block?.blockCode} validated & committed to live schedule!`,
+          message: `Coordinated Block ${result.block?.blockCode} validated & committed to live schedule!`,
           type: 'success',
         });
       } else if (result.status === 'REPLANNED') {
         setToast({
           visible: true,
-          message: `⚠ Window no longer available (${result.reason || 'schedule collision'}). AI automatically replanned to next safe window!`,
+          message: `Window no longer available (${result.reason || 'schedule collision'}). AI automatically replanned to next safe window!`,
           type: 'info',
         });
       }
@@ -317,7 +317,6 @@ export default function Dashboard() {
           <div className="flex-1 overflow-y-auto p-2.5 flex flex-col gap-2">
             {activeOperationalConflicts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-20 gap-1 text-center">
-                <div className="text-emerald-400 text-sm">✓</div>
                 <div className="font-mono-rail text-[9px] text-emerald-400 font-semibold">
                   NO ACTIVE CONFLICTS ON {selectedCorridor}
                 </div>
@@ -469,7 +468,7 @@ export default function Dashboard() {
           {/* Central Scrollable Area Containing Separated Sections */}
           <div className="flex-1 overflow-y-auto px-3.5 py-2.5 flex flex-col gap-2.5">
             
-            {/* ── SECTION 1: 🔧 MAINTENANCE BLOCK SCHEDULE (SIMPLE 5-ROW PREVIOUS STYLE) ── */}
+            {/* SECTION 1: MAINTENANCE BLOCK SCHEDULE (SIMPLE 5-ROW PREVIOUS STYLE) */}
             <NativeTimeline
               blocks={filteredBlocks}
               schedules={schedules}
@@ -481,7 +480,7 @@ export default function Dashboard() {
               nowPct={nowPct}
             />
 
-            {/* ── SECTION 2: 🚆 TRAIN MOVEMENT SCHEDULE (SEPARATE COMPONENT) ── */}
+            {/* SECTION 2: TRAIN MOVEMENT SCHEDULE (SEPARATE COMPONENT) */}
             <TrainMovementTimeline
               schedules={schedules}
               blocks={filteredBlocks}
@@ -492,11 +491,11 @@ export default function Dashboard() {
               nowTimeStr={nowTimeStr}
             />
 
-            {/* ── SECTION 3: 📦 FREIGHT / TRAFFIC CONTEXT STRIP ── */}
+            {/* SECTION 3: FREIGHT / TRAFFIC CONTEXT STRIP */}
             <div className="flex flex-col gap-1 bg-slate-900/80 border border-slate-800 rounded-lg p-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs">📦</span>
+                  <span className="w-2 h-2 rounded-full bg-slate-400"></span>
                   <span className="font-mono-rail text-[10px] font-bold text-slate-300 uppercase tracking-wider">
                     FREIGHT TRAFFIC CONTEXT — EXPECTED DENSITY ON {selectedCorridor === 'ALL' ? 'ALL TRUNKS' : selectedCorridor}
                   </span>
@@ -540,27 +539,27 @@ export default function Dashboard() {
             <div className="flex items-center gap-3.5 flex-wrap">
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded bg-cyan-500/50 border border-cyan-400" />
-                <span className="text-slate-400">🚆 Passenger / Express</span>
+                <span className="text-slate-400">Passenger / Express</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded bg-amber-500/50 border border-amber-400" />
-                <span className="text-slate-400">🚛 Goods / Freight</span>
+                <span className="text-slate-400">Goods / Freight</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded bg-slate-700 border border-slate-500" />
-                <span className="text-slate-400">🔧 Maintenance Block</span>
+                <span className="text-slate-400">Maintenance Block</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded bg-emerald-500/50 border border-emerald-400 animate-pulse" />
-                <span className="text-emerald-400 font-bold">🤖 AI Recommended (02:00–08:00)</span>
+                <span className="text-emerald-400 font-bold">AI Recommended (02:00–08:00)</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded bg-red-500/50 border border-red-500 ring-1 ring-red-400" />
-                <span className="text-red-400 font-bold">⚠ Conflict / At Risk</span>
+                <span className="text-red-400 font-bold">Conflict / At Risk</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2.5 h-2.5 rounded bg-slate-600 border border-slate-500" />
-                <span className="text-slate-500">✓ Completed / Historical</span>
+                <span className="text-slate-500">Completed / Historical</span>
               </div>
             </div>
             <div className="text-slate-500">
@@ -576,11 +575,10 @@ export default function Dashboard() {
           ══════════════════════════════════════════════════════════════ */}
       <div className="flex flex-col gap-2.5 h-full overflow-hidden">
         
-        {/* 🤖 DYNAMIC AI RECOMMENDED BLOCK CARD */}
+        {/* DYNAMIC AI RECOMMENDED BLOCK CARD */}
         <div className="bg-slate-900/90 border-2 border-emerald-500/60 rounded-xl p-3 shadow-xl flex flex-col gap-2 flex-shrink-0">
           <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
             <div className="flex items-center gap-1.5">
-              <span className="text-base">🤖</span>
               <span className="font-mono-rail text-xs font-bold text-emerald-400">
                 AI COORDINATED RECOMMENDATION
               </span>
@@ -625,7 +623,7 @@ export default function Dashboard() {
                   </span>
                   {activeRecommendation.reasons?.slice(0, 3).map((reason, idx) => (
                     <div key={idx} className="flex items-start gap-1 text-[8.5px] text-slate-300">
-                      <span className="text-emerald-400 font-bold flex-shrink-0">✓</span>
+                      <span className="text-emerald-400 font-bold flex-shrink-0">•</span>
                       <span className="truncate">{reason}</span>
                     </div>
                   ))}
@@ -638,7 +636,7 @@ export default function Dashboard() {
                   disabled={aiCommitLoading}
                   className="w-full py-1.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono-rail font-bold text-[11px] shadow transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
                 >
-                  {aiCommitLoading ? 'VALIDATING & COMMITTING...' : '✓ ACCEPT & COMMIT BLOCK'}
+                  {aiCommitLoading ? 'VALIDATING & COMMITTING...' : 'ACCEPT & COMMIT BLOCK'}
                 </button>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -646,7 +644,7 @@ export default function Dashboard() {
                     disabled={aiCommitLoading}
                     className="flex-1 py-1 px-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-red-400 border border-slate-800 hover:border-red-500/40 font-mono-rail text-[9px] transition-colors cursor-pointer text-center disabled:opacity-50"
                   >
-                    ✕ REJECT
+                    REJECT
                   </button>
                   <button
                     onClick={() => navigate('/optimization')}
@@ -659,7 +657,6 @@ export default function Dashboard() {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-4 px-2 gap-2 text-center bg-slate-950 rounded-lg border border-slate-800">
-              <div className="text-emerald-400 text-lg">✓</div>
               <div className="font-mono-rail text-[10px] text-slate-200 font-bold">
                 ALL CORRIDORS FULLY COORDINATED
               </div>
@@ -697,7 +694,6 @@ export default function Dashboard() {
           <div className="p-2 flex-1 overflow-y-auto flex flex-col gap-1">
             {activityFeed.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-20 gap-1">
-                <div className="text-slate-600 text-base">⊘</div>
                 <div className="font-mono-rail text-[8px] text-slate-500">No recent activity</div>
               </div>
             ) : (
@@ -710,7 +706,7 @@ export default function Dashboard() {
                           item.action === 'APPROVED' ? 'text-emerald-400' : 'text-red-400'
                         }`}
                       >
-                        {item.action === 'APPROVED' ? '▶' : '✕'} {item.defectCode}
+                        {item.action === 'APPROVED' ? 'OK' : 'REJ'} {item.defectCode}
                       </span>
                       <span className="font-mono-rail text-[7px] text-slate-500">
                         {item.assetId} {item.blockCode && `→ ${item.blockCode}`}
@@ -743,8 +739,8 @@ export default function Dashboard() {
               {/* Header */}
               <div className="flex items-start justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-sm">
-                    ⚠
+                  <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 font-bold text-xs">
+                    ALERT
                   </div>
                   <div>
                     <h3 className="text-xs font-bold text-red-400 uppercase tracking-wider">
@@ -759,7 +755,7 @@ export default function Dashboard() {
                   onClick={() => setActiveConflict(null)}
                   className="text-slate-400 hover:text-slate-200 text-sm font-bold p-1 rounded hover:bg-slate-800 cursor-pointer"
                 >
-                  ✕
+                  X
                 </button>
               </div>
 
@@ -791,7 +787,7 @@ export default function Dashboard() {
               <div className="bg-emerald-950/30 border border-emerald-500/40 rounded-lg p-3 flex flex-col gap-1.5 text-[10px]">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-emerald-400 uppercase text-[10px] flex items-center gap-1">
-                    <span>⚡</span> REOPTIMIZATION AVAILABLE
+                    REOPTIMIZATION AVAILABLE
                   </span>
                   <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded text-[8px] font-bold">
                     FEASIBLE ALTERNATIVE
@@ -805,7 +801,7 @@ export default function Dashboard() {
                     <div className="font-bold text-emerald-300 text-[10px]">ALT-02: Tomorrow 02:00 – 07:00</div>
                     <div className="text-slate-500 text-[8.5px]">Night Golden Window · Score: 52 · 0 Express Delays</div>
                   </div>
-                  <span className="text-emerald-400 font-black text-xs">✓ FEASIBLE</span>
+                  <span className="text-emerald-400 font-black text-xs">FEASIBLE</span>
                 </div>
               </div>
 
@@ -825,7 +821,7 @@ export default function Dashboard() {
                   }}
                   className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono-rail font-bold text-xs py-2 px-4 rounded-lg flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 cursor-pointer transition-all"
                 >
-                  <span>⚡</span> View Alternatives in What-If Sim →
+                  View Alternatives in What-If Sim →
                 </button>
               </div>
             </div>

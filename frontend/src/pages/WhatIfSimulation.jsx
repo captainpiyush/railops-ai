@@ -62,7 +62,7 @@ const PREDEFINED_SCENARIOS = [
     id: 'SCN-EMERGENCY',
     name: 'Track Emergency',
     type: 'EMERGENCY_BLOCK',
-    icon: '⚡',
+    icon: '',
     severity: 'CRITICAL',
     defaultDelay: 120,
     defaultCorridor: 'COR-01',
@@ -73,7 +73,7 @@ const PREDEFINED_SCENARIOS = [
     id: 'SCN-MONSOON',
     name: 'Monsoon Disruption',
     type: 'WEATHER_RESTRICTION',
-    icon: '🌧',
+    icon: '',
     severity: 'HIGH',
     defaultDelay: 180,
     defaultCorridor: 'COR-03',
@@ -84,7 +84,7 @@ const PREDEFINED_SCENARIOS = [
     id: 'SCN-POWER',
     name: 'Power Failure (OHE)',
     type: 'TRACTION_OHE',
-    icon: '⚡',
+    icon: '',
     severity: 'HIGH',
     defaultDelay: 90,
     defaultCorridor: 'COR-04',
@@ -95,7 +95,7 @@ const PREDEFINED_SCENARIOS = [
     id: 'SCN-SIGNALLING',
     name: 'Signalling Interlocking Fault',
     type: 'SIGNALLING_EI',
-    icon: '🛑',
+    icon: '',
     severity: 'CRITICAL',
     defaultDelay: 150,
     defaultCorridor: 'COR-02',
@@ -106,7 +106,7 @@ const PREDEFINED_SCENARIOS = [
     id: 'SCN-REROUTE',
     name: 'Freight Consist Derailment',
     type: 'FREIGHT_INCIDENT',
-    icon: '🚜',
+    icon: '',
     severity: 'MEDIUM',
     defaultDelay: 60,
     defaultCorridor: 'COR-05',
@@ -352,7 +352,7 @@ export default function WhatIfSimulation() {
       {isConflictMode && (
         <div className="bg-gradient-to-r from-amber-950/70 via-slate-900 to-emerald-950/70 border border-amber-500/40 rounded-xl px-4 py-2.5 flex items-center justify-between shadow-lg flex-shrink-0">
           <div className="flex items-center gap-3">
-            <span className="text-lg">⚡</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
             <div>
               <div className="flex items-center gap-2 font-mono-rail text-xs font-bold text-amber-300">
                 <span>CONFLICT RESOLUTION MODE</span>
@@ -385,7 +385,7 @@ export default function WhatIfSimulation() {
               onClick={handleKeepCurrentPlan}
               className="font-mono-rail text-[9px] px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 cursor-pointer transition-colors"
             >
-              Back to Dashboard ✕
+              Back to Dashboard
             </button>
           </div>
         </div>
@@ -452,35 +452,35 @@ export default function WhatIfSimulation() {
                   </div>
                   <div className="flex flex-col gap-1 text-[8.5px]">
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Future Window ({reoptResult.selectedAlternative?.dateLabel} {reoptResult.selectedAlternative?.timeLabel})</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Passenger Movements Preserved (0 Express Disrupted)</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Freight Movements Preserved (0 Goods Rakes Regulated)</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Headway Safety Buffer Satisfied (20-min buffer)</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Existing Maintenance Collision-Free</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Required Duration Available ({reoptResult.selectedAlternative?.durationHrs}h continuous)</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Department Compatibility Satisfied ({reoptResult.targetBlock?.department})</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-200">
-                      <span className="text-emerald-400 font-bold">✓</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                       <span>Corridor Operating Window Available ({reoptResult.corridorId})</span>
                     </div>
                   </div>
@@ -492,7 +492,7 @@ export default function WhatIfSimulation() {
                   disabled={isReoptimizing}
                   className="w-full py-1.5 px-3 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono-rail text-[9px] border border-slate-700 transition-colors cursor-pointer text-center"
                 >
-                  {isReoptimizing ? 'RE-EVALUATING CONSTRAINTS...' : '🔄 RE-CALCULATE ALTERNATIVE WINDOWS'}
+                  {isReoptimizing ? 'RE-EVALUATING CONSTRAINTS...' : 'RE-CALCULATE ALTERNATIVE WINDOWS'}
                 </button>
               </>
             ) : (
@@ -518,7 +518,6 @@ export default function WhatIfSimulation() {
                         >
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm">{s.icon}</span>
                               <span className="font-mono-rail text-xs font-bold text-slate-200">{s.name}</span>
                             </div>
                             <span className={`font-mono-rail text-[8px] px-1.5 py-0.5 rounded border font-semibold ${
@@ -618,7 +617,7 @@ export default function WhatIfSimulation() {
                       : 'bg-red-950/60 border-red-500/50 text-red-300'
                   }`}>
                     <div className="font-bold mb-0.5">
-                      {applyFeedback.type === 'success' ? '✓ PLAN COMMITTED' : applyFeedback.type === 'warning' ? '⚠ RE-OPTIMIZATION SUPERSEDED' : '✕ ERROR'}
+                      {applyFeedback.type === 'success' ? 'PLAN COMMITTED' : applyFeedback.type === 'warning' ? 'RE-OPTIMIZATION SUPERSEDED' : 'ERROR'}
                     </div>
                     <div>{applyFeedback.message}</div>
                     {applyFeedback.type === 'success' && (
@@ -644,9 +643,9 @@ export default function WhatIfSimulation() {
                       VALIDATING & COMMITTING...
                     </>
                   ) : reoptResult.applied ? (
-                    '✓ COMMITTED TO SCHEDULE'
+                    'COMMITTED TO SCHEDULE'
                   ) : (
-                    '✓ APPLY RE-OPTIMIZED PLAN'
+                    'APPLY RE-OPTIMIZED PLAN'
                   )}
                 </button>
 
@@ -675,7 +674,7 @@ export default function WhatIfSimulation() {
                   disabled={isSimulating}
                   className="w-full flex items-center justify-center gap-2 font-mono-rail text-xs font-bold py-2.5 rounded-lg transition-all bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer"
                 >
-                  {isSimulating ? 'MODELING CASCADE...' : '▶ RUN CASCADE SIMULATION'}
+                  {isSimulating ? 'MODELING CASCADE...' : 'RUN CASCADE SIMULATION'}
                 </button>
 
                 <button
@@ -683,7 +682,7 @@ export default function WhatIfSimulation() {
                   disabled={isReoptimizing}
                   className="w-full flex items-center justify-center gap-2 font-mono-rail text-xs font-bold py-2.5 rounded-lg transition-all bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 cursor-pointer"
                 >
-                  {isReoptimizing ? 'RE-OPTIMIZING PLAN...' : '⚡ RE-OPTIMIZE PLAN'}
+                  {isReoptimizing ? 'RE-OPTIMIZING PLAN...' : 'RE-OPTIMIZE PLAN'}
                 </button>
               </>
             )}
@@ -704,7 +703,7 @@ export default function WhatIfSimulation() {
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <span>⚡ RE-OPTIMIZED IMPACT REPORT</span>
+                <span>RE-OPTIMIZED IMPACT REPORT</span>
                 {reoptResult && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
               </button>
               <button
@@ -729,7 +728,6 @@ export default function WhatIfSimulation() {
             <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3.5">
               {!reoptResult ? (
                 <div className="flex flex-col items-center justify-center h-48 gap-2 font-mono-rail text-slate-500">
-                  <div className="text-2xl opacity-25">⚡</div>
                   <div>Calculating constraint-aware re-optimization...</div>
                 </div>
               ) : (
@@ -785,7 +783,7 @@ export default function WhatIfSimulation() {
                           <span className="text-emerald-400 font-bold text-sm">{reoptResult.reoptimizedMetrics?.activeConflicts}</span>
                         </div>
                         <span className="text-emerald-400 text-[8px] font-bold">
-                          {reoptResult.improvements?.conflictsResolved > 0 ? '✓ Deconflicted' : 'Clear'}
+                          {reoptResult.improvements?.conflictsResolved > 0 ? 'Deconflicted' : 'Clear'}
                         </span>
                       </div>
 
@@ -803,13 +801,12 @@ export default function WhatIfSimulation() {
                   {/* 2. AI RE-OPTIMIZATION ACTIONS (Requirement 11) */}
                   <div className="bg-slate-800/70 border border-slate-700/90 rounded-xl p-3.5 shadow-md flex flex-col gap-2">
                     <div className="font-mono-rail text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                      <span>🤖</span>
                       <span className="uppercase tracking-wider">AI RE-OPTIMIZATION ACTIONS</span>
                     </div>
                     <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 flex flex-col gap-1.5 font-mono-rail text-[9.5px]">
                       {reoptResult.aiActions?.map((action, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-slate-300 leading-relaxed">
-                          <span className="text-emerald-400 font-bold mt-0.5">▶</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0"></span>
                           <span>{action}</span>
                         </div>
                       ))}
@@ -860,7 +857,7 @@ export default function WhatIfSimulation() {
                                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                 : 'bg-red-500/20 text-red-400 border border-red-500/30'
                             }`}>
-                              {alt.feasible ? '✓ FEASIBLE' : '✕ INFEASIBLE'}
+                              {alt.feasible ? 'FEASIBLE' : 'INFEASIBLE'}
                             </span>
                             <span className="font-bold text-slate-200 text-xs">Score: {alt.score}</span>
                           </div>
@@ -909,7 +906,7 @@ export default function WhatIfSimulation() {
               <div className="bg-slate-800/60 border border-slate-800 rounded-xl overflow-hidden flex-1 flex flex-col min-h-0">
                 <div className="px-4 py-2 border-b border-slate-800 bg-slate-850 flex items-center justify-between">
                   <span className="font-mono-rail text-xs font-semibold text-slate-300">CORRIDOR CASCADE SPREAD</span>
-                  <span className="font-mono-rail text-[9px] text-slate-500">100% Primary ➔ 65% Secondary ➔ 30% Tertiary</span>
+                  <span className="font-mono-rail text-[9px] text-slate-500">100% Primary -> 65% Secondary -> 30% Tertiary</span>
                 </div>
                 <div className="divide-y divide-slate-800/50 overflow-y-auto">
                   {cascadeData.corridorResults.map(c => (

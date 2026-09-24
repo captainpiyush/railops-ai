@@ -175,12 +175,12 @@ export default function OptimizationEngine() {
   }
 
   const PIPELINE_STAGES = [
-    { id: 'input', label: 'Input Data', sub: 'TMS, SMMS, TDMS, COA', icon: '⬇', color: 'border-slate-600 text-slate-300', activeColor: 'border-emerald-500 text-emerald-400 bg-emerald-500/5', stepRange: [0, 1] },
-    { id: 'scoring', label: 'Explainable Scoring', sub: 'Multi-factor weighted', icon: '◉', color: 'border-slate-600 text-slate-300', activeColor: 'border-blue-500 text-blue-400 bg-blue-500/5', stepRange: [1, 2] },
-    { id: 'bundling', label: 'Multi-Dept Bundling', sub: 'Track + Signal + Traction', icon: '⬡', color: 'border-slate-600 text-slate-300', activeColor: 'border-violet-500 text-violet-400 bg-violet-500/5', stepRange: [2, 3] },
-    { id: 'constraint', label: 'Constraint Engine', sub: 'Timetable & Freight', icon: '⚠', color: 'border-slate-600 text-slate-300', activeColor: 'border-red-500 text-red-400 bg-red-500/5', stepRange: [3, 4] },
-    { id: 'candidates', label: 'Candidate Scoring', sub: 'Composite window selection', icon: '◈', color: 'border-slate-600 text-slate-300', activeColor: 'border-amber-500 text-amber-400 bg-amber-500/5', stepRange: [4, 5] },
-    { id: 'output', label: 'Coordinated Plan', sub: 'Before vs After availability', icon: '✓', color: 'border-slate-600 text-slate-300', activeColor: 'border-emerald-500 text-emerald-400 bg-emerald-500/5', stepRange: [5, 6] },
+    { id: 'input', label: 'Input Data', sub: 'TMS, SMMS, TDMS, COA', icon: '1', color: 'border-slate-600 text-slate-300', activeColor: 'border-emerald-500 text-emerald-400 bg-emerald-500/5', stepRange: [0, 1] },
+    { id: 'scoring', label: 'Explainable Scoring', sub: 'Multi-factor weighted', icon: '2', color: 'border-slate-600 text-slate-300', activeColor: 'border-blue-500 text-blue-400 bg-blue-500/5', stepRange: [1, 2] },
+    { id: 'bundling', label: 'Multi-Dept Bundling', sub: 'Track + Signal + Traction', icon: '3', color: 'border-slate-600 text-slate-300', activeColor: 'border-violet-500 text-violet-400 bg-violet-500/5', stepRange: [2, 3] },
+    { id: 'constraint', label: 'Constraint Engine', sub: 'Timetable & Freight', icon: '4', color: 'border-slate-600 text-slate-300', activeColor: 'border-red-500 text-red-400 bg-red-500/5', stepRange: [3, 4] },
+    { id: 'candidates', label: 'Candidate Scoring', sub: 'Composite window selection', icon: '5', color: 'border-slate-600 text-slate-300', activeColor: 'border-amber-500 text-amber-400 bg-amber-500/5', stepRange: [4, 5] },
+    { id: 'output', label: 'Coordinated Plan', sub: 'Before vs After availability', icon: '6', color: 'border-slate-600 text-slate-300', activeColor: 'border-emerald-500 text-emerald-400 bg-emerald-500/5', stepRange: [5, 6] },
   ]
 
   const displayConflicts = result?.conflictMatrix ?? initConflicts
@@ -268,7 +268,7 @@ export default function OptimizationEngine() {
                   OPTIMIZING...
                 </>
               ) : (
-                <>▶ RUN OPTIMIZATION</>
+                <>RUN OPTIMIZATION</>
               )}
             </button>
           </div>
@@ -296,7 +296,7 @@ export default function OptimizationEngine() {
                   <div className="font-mono-rail text-[8px] text-slate-500 mt-0.5 leading-tight truncate">
                     {stage.sub}
                   </div>
-                  {isDone && <div className="font-mono-rail text-[8px] text-emerald-500 mt-1">✓ done</div>}
+                  {isDone && <div className="font-mono-rail text-[8px] text-emerald-500 mt-1">done</div>}
                   {isActive && <div className="font-mono-rail text-[8px] text-current mt-1 animate-pulse">running...</div>}
                 </div>
                 {idx < PIPELINE_STAGES.length - 1 && (
@@ -305,7 +305,7 @@ export default function OptimizationEngine() {
                       (running && stepIdx > stage.stepRange[1]) || (!running && result)
                         ? 'text-emerald-600'
                         : 'text-slate-700'
-                    }`}>▶</div>
+                    }`}>→</div>
                   </div>
                 )}
               </React.Fragment>
@@ -357,20 +357,20 @@ export default function OptimizationEngine() {
                   : 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer shadow'
               }`}
             >
-              {isApproving ? 'COMMITTING...' : approveSuccess ? '✓ PLAN COMMITTED' : '✓ APPROVE & COMMIT PLAN'}
+              {isApproving ? 'COMMITTING...' : approveSuccess ? 'PLAN COMMITTED' : 'APPROVE & COMMIT PLAN'}
             </button>
           </div>
         )}
 
         {approveSuccess && (
           <div className="px-5 py-2 border-t border-emerald-500/40 bg-emerald-900/20 font-mono-rail text-[10px] text-emerald-300">
-            ✓ {approveSuccess}
+            {approveSuccess}
           </div>
         )}
 
         {error && (
           <div className="px-5 py-3 border-t border-red-800/40 bg-red-900/10 font-mono-rail text-[10px] text-red-400">
-            ✕ Engine error: {error}
+            Engine error: {error}
           </div>
         )}
       </div>
@@ -428,7 +428,7 @@ export default function OptimizationEngine() {
                 <div className="font-mono-rail text-lg font-bold text-blue-400">{optimized.assetDowntimeHours}h</div>
               </div>
               <div className="font-mono-rail text-[8px] text-emerald-500 font-semibold mt-1">
-                ▼ -{result.delta?.hoursSaved}h downtime
+                -{result.delta?.hoursSaved}h downtime
               </div>
             </div>
 
@@ -440,7 +440,7 @@ export default function OptimizationEngine() {
                 <div className="font-mono-rail text-lg font-bold text-emerald-400">{optimized.trainImpact} delayed</div>
               </div>
               <div className="font-mono-rail text-[8px] text-emerald-500 font-semibold mt-1">
-                ✓ {result.delta?.trainMovementsSaved} services saved
+                {result.delta?.trainMovementsSaved} services saved
               </div>
             </div>
 
@@ -452,7 +452,7 @@ export default function OptimizationEngine() {
                 <div className="font-mono-rail text-lg font-bold text-emerald-400">{optimized.conflicts}</div>
               </div>
               <div className="font-mono-rail text-[8px] text-emerald-500 font-semibold mt-1">
-                ✓ 100% resolved
+                100% resolved
               </div>
             </div>
 
@@ -464,7 +464,7 @@ export default function OptimizationEngine() {
                 <div className="font-mono-rail text-lg font-bold text-violet-400">{optimized.blockUtilizationPct}%</div>
               </div>
               <div className="font-mono-rail text-[8px] text-emerald-500 font-semibold mt-1">
-                ▲ +{result.delta?.utilizationGainPct}% efficiency
+                +{result.delta?.utilizationGainPct}% efficiency
               </div>
             </div>
           </div>
@@ -508,7 +508,6 @@ export default function OptimizationEngine() {
           <div className="p-4 overflow-y-auto flex flex-col gap-4">
             {!result ? (
               <div className="flex flex-col items-center justify-center h-48 gap-2">
-                <div className="text-3xl opacity-20">⚙</div>
                 <div className="font-mono-rail text-xs text-slate-500">
                   Click "RUN OPTIMIZATION" to generate constraint-aware block plans
                 </div>
@@ -551,7 +550,7 @@ export default function OptimizationEngine() {
                     {/* Consolidated Departments Badge */}
                     <div className="bg-slate-800/80 border border-violet-500/30 rounded-lg p-3 mb-3">
                       <div className="font-mono-rail text-[9px] text-violet-400 font-bold mb-1.5 flex items-center gap-1.5">
-                        <span>⚡ MULTI-DEPARTMENT CONSOLIDATION</span>
+                        <span>MULTI-DEPARTMENT CONSOLIDATION</span>
                         <span className="text-[8px] bg-violet-500/20 px-1.5 py-0.2 rounded border border-violet-500/40 text-violet-300">
                           3 DEPARTMENTS IN 1 POSSESSION
                         </span>
@@ -587,7 +586,7 @@ export default function OptimizationEngine() {
                 {/* Right Col: Backend Explainability ("Why this block?") */}
                 <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-4 flex flex-col gap-3 shadow-xl">
                   <div className="font-mono-rail text-xs font-bold text-slate-200 tracking-wide flex items-center gap-2 border-b border-slate-700 pb-2">
-                    <span className="text-emerald-400 text-sm">💡</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>WHY THIS BLOCK? (EXPLAINABLE AI)</span>
                   </div>
                   <div className="font-mono-rail text-[8px] text-slate-500">
@@ -597,7 +596,7 @@ export default function OptimizationEngine() {
                   <div className="flex flex-col gap-2.5 overflow-y-auto max-h-[320px] pr-1">
                     {explanations.map((reason, idx) => (
                       <div key={idx} className="flex items-start gap-2.5 bg-slate-800/50 p-2 rounded-lg border border-slate-700/60">
-                        <span className="text-emerald-400 text-xs font-bold mt-0.5">✓</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1 flex-shrink-0"></span>
                         <span className="font-mono-rail text-[9px] text-slate-300 leading-snug">
                           {reason}
                         </span>
@@ -697,7 +696,7 @@ export default function OptimizationEngine() {
                         {cand.violations?.length > 0 && (
                           <div className="mt-2 font-mono-rail text-[9px] text-red-400 flex flex-col gap-1">
                             {cand.violations.map((v, i) => (
-                              <div key={i}>✕ {v}</div>
+                              <div key={i}>{v}</div>
                             ))}
                           </div>
                         )}
@@ -705,7 +704,7 @@ export default function OptimizationEngine() {
                           <div className="mt-2 font-mono-rail text-[8px] text-slate-400 flex flex-wrap gap-2">
                             {cand.reasons.map((r, i) => (
                               <span key={i} className="bg-slate-800 px-2 py-0.5 rounded text-slate-300">
-                                ✓ {r}
+                                {r}
                               </span>
                             ))}
                           </div>
@@ -808,7 +807,7 @@ export default function OptimizationEngine() {
           <div className="p-4 overflow-y-auto">
             {displayConflicts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 gap-1 font-mono-rail text-[10px] text-emerald-400">
-                ✓ No conflicts detected in planned schedule
+                No conflicts detected in planned schedule
               </div>
             ) : (
               <div className="divide-y divide-slate-700/40">

@@ -1,34 +1,37 @@
 import React, { createContext, useContext, useState } from 'react';
 
 export const ROLES = {
-  ALL: 'ALL',    // Admin / full access (COA + Operations Chief)
-  TMS: 'TMS',   // Track Management — dept dashboard + optimization only
-  SMMS: 'SMMS', // Signal Maintenance — dept dashboard + optimization only
-  TDMS: 'TDMS', // Traction Distribution — dept dashboard + optimization only
-  BDMS: 'BDMS', // Block Disconnection — data integration + corridor time + optimization
-  COA: 'COA',   // Control Office Application — full access (same as ALL)
+  ALL: 'ALL',    // Admin / full access
+  TMS: 'TMS',   // Track Management
+  SMMS: 'SMMS', // Signal Maintenance
+  TDMS: 'TDMS', // Traction Distribution
+  BDMS: 'BDMS', // Block Disconnection
+  COA: 'COA',   // Control Office Application (requests removed)
 };
 
 export const ROLE_META = {
-  ALL:  { label: 'Admin / Operations',  color: 'slate',  icon: '🔧', home: '/' },
-  TMS:  { label: 'Track Dept (TMS)',    color: 'blue',   icon: '🛤️',  home: '/department/tms' },
-  SMMS: { label: 'Signal Dept (SMMS)', color: 'purple', icon: '🚦',  home: '/department/smms' },
-  TDMS: { label: 'Traction Dept (TDMS)',color: 'amber',  icon: '⚡',  home: '/department/tdms' },
-  BDMS: { label: 'Block Disconnection (BDMS)', color: 'teal', icon: '📋', home: '/integration' },
-  COA:  { label: 'Control Office (COA)',color: 'rose',   icon: '🎛️',  home: '/' },
+  ALL:  { label: 'Admin / Operations',  color: 'slate', home: '/' },
+  TMS:  { label: 'Track Dept (TMS)',    color: 'blue',  home: '/department/tms' },
+  SMMS: { label: 'Signal Dept (SMMS)', color: 'purple', home: '/department/smms' },
+  TDMS: { label: 'Traction Dept (TDMS)',color: 'amber', home: '/department/tdms' },
+  BDMS: { label: 'Block Disconnection (BDMS)', color: 'teal', home: '/department/bdms' },
+  COA:  { label: 'Control Office (COA)',color: 'rose',  home: '/' },
 };
 
 /**
  * Returns the routes accessible for a given role.
- * ALL/COA = unrestricted.
+ * ALL = unrestricted.
+ * COA = full access EXCEPT /requests.
+ * TMS, SMMS, TDMS, BDMS = department dashboard, optimization, and history.
  */
 export function getAllowedRoutes(role) {
   switch (role) {
-    case 'TMS':  return ['/department/tms',  '/optimization'];
-    case 'SMMS': return ['/department/smms', '/optimization'];
-    case 'TDMS': return ['/department/tdms', '/optimization'];
-    case 'BDMS': return ['/integration', '/department/bdms', '/optimization'];
-    default:     return null; // null = unrestricted
+    case 'TMS':  return ['/department/tms',  '/optimization', '/history'];
+    case 'SMMS': return ['/department/smms', '/optimization', '/history'];
+    case 'TDMS': return ['/department/tdms', '/optimization', '/history'];
+    case 'BDMS': return ['/integration', '/department/bdms', '/optimization', '/history'];
+    case 'COA':  return ['/', '/department', '/integration', '/optimization', '/simulation', '/approval', '/history'];
+    default:     return null; // null = unrestricted (ALL)
   }
 }
 
@@ -36,9 +39,12 @@ export function getAllowedRoutes(role) {
  * Returns true if the given role can access the given pathname.
  */
 export function canRoleAccess(role, pathname) {
+  if (role === 'COA' && pathname.startsWith('/requests')) {
+    return false;
+  }
   const allowed = getAllowedRoutes(role);
   if (!allowed) return true;
-  return allowed.some(r => pathname.startsWith(r));
+  return allowed.some(r => pathname === r || pathname.startsWith(r + '/') || (r === '/' && pathname === '/'));
 }
 
 const UserRoleContext = createContext(null);

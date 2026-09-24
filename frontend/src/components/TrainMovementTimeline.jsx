@@ -7,7 +7,7 @@ export function evaluateTrainStatus(train) {
 
   return {
     status: 'OPERATIONAL',
-    badge: isPassenger ? '🚆 PRIORITY 1 — PASSENGER' : '🚛 PRIORITY 2 — FREIGHT',
+    badge: isPassenger ? 'PRIORITY 1 — PASSENGER' : 'PRIORITY 2 — FREIGHT',
     title: isPassenger ? 'PROTECTED PASSENGER / EXPRESS MOVEMENT' : 'SCHEDULED GOODS / FREIGHT TRANSIT',
     trackText: trainTrack,
     priorityRank: isPassenger ? 'Priority 1 (Highest)' : 'Priority 2 (High)',
@@ -106,12 +106,12 @@ export default function TrainMovementTimeline({
     <div className="flex flex-col gap-2.5">
       
       {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 2: 🚆 PASSENGER / EXPRESS TRAIN MOVEMENT SCHEDULE (5 CORRIDOR ROWS)
+          SECTION 2: PASSENGER / EXPRESS TRAIN MOVEMENT SCHEDULE (5 CORRIDOR ROWS)
           ═══════════════════════════════════════════════════════════════════ */}
       <div className="flex flex-col gap-1.5 bg-slate-900/80 border border-slate-800 rounded-lg p-2.5 shadow-md">
         <div className="flex items-center justify-between border-b border-slate-800/80 pb-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs">🚆</span>
+            <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
             <span className="font-mono-rail text-[11px] font-bold text-cyan-300 uppercase tracking-wider">
               TRAIN MOVEMENT SCHEDULE — PASSENGER / EXPRESS
             </span>
@@ -124,7 +124,7 @@ export default function TrainMovementTimeline({
               Timetable Services: <strong className="text-cyan-400">{totalPassengerTrains} Express Trains</strong>
             </span>
             <span className="text-emerald-400 font-bold">
-              ✓ Operational Priority 1
+              Operational Priority 1
             </span>
           </div>
         </div>
@@ -189,10 +189,9 @@ export default function TrainMovementTimeline({
                             width: `${width}%`,
                             zIndex: 10 + idx,
                           }}
-                          title={`🚆 Express ${tr.trainNumber}: ${tr.trainName || ''}\n${depStr}–${arrStr}\nTrack: ${tr.track || 'UP Main'}\nStatus: Protected Movement (Priority 1)`}
+                          title={`Express ${tr.trainNumber}: ${tr.trainName || ''}\n${depStr}–${arrStr}\nTrack: ${tr.track || 'UP Main'}\nStatus: Protected Movement (Priority 1)`}
                         >
                           <span className="font-mono-rail text-[8.5px] font-bold truncate leading-none flex items-center gap-1">
-                            <span>🚆</span>
                             <span>{tr.trainNumber}</span>
                             {width > 6 && <span className="opacity-75 text-[7.5px]">({depStr})</span>}
                           </span>
@@ -208,12 +207,12 @@ export default function TrainMovementTimeline({
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 3: 🚛 GOODS / FREIGHT TRAIN MOVEMENT SCHEDULE (5 CORRIDOR ROWS)
+          SECTION 3: GOODS / FREIGHT TRAIN MOVEMENT SCHEDULE (5 CORRIDOR ROWS)
           ═══════════════════════════════════════════════════════════════════ */}
       <div className="flex flex-col gap-1.5 bg-slate-900/80 border border-slate-800 rounded-lg p-2.5 shadow-md">
         <div className="flex items-center justify-between border-b border-slate-800/80 pb-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs">🚛</span>
+            <span className="w-2 h-2 rounded-full bg-amber-400"></span>
             <span className="font-mono-rail text-[11px] font-bold text-amber-300 uppercase tracking-wider">
               TRAIN MOVEMENT SCHEDULE — GOODS / FREIGHT
             </span>
@@ -226,7 +225,7 @@ export default function TrainMovementTimeline({
               Freight Rakes: <strong className="text-amber-400">{totalGoodsTrains} Dedicated Goods</strong>
             </span>
             <span className="text-amber-400 font-bold">
-              ✓ Operational Priority 2
+              Operational Priority 2
             </span>
           </div>
         </div>
@@ -291,10 +290,9 @@ export default function TrainMovementTimeline({
                             width: `${width}%`,
                             zIndex: 10 + idx,
                           }}
-                          title={`🚛 Goods ${tr.trainNumber}: ${tr.trainName || ''}\n${depStr}–${arrStr}\nTrack: ${tr.track || 'DN Main'}\nStatus: Timetabled Freight (Priority 2)`}
+                          title={`Goods ${tr.trainNumber}: ${tr.trainName || ''}\n${depStr}–${arrStr}\nTrack: ${tr.track || 'DN Main'}\nStatus: Timetabled Freight (Priority 2)`}
                         >
                           <span className="font-mono-rail text-[8.5px] font-bold truncate leading-none flex items-center gap-1">
-                            <span>🚛</span>
                             <span>{tr.trainNumber}</span>
                             {width > 6 && <span className="opacity-75 text-[7.5px]">({depStr})</span>}
                           </span>
@@ -315,7 +313,6 @@ export default function TrainMovementTimeline({
           <div className="bg-slate-900 border border-slate-700 rounded-xl max-w-md w-full p-5 shadow-2xl flex flex-col gap-3 font-mono-rail">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <div className="flex items-center gap-2">
-                <span className="text-base">{selectedTrain.trainType === 'Goods' ? '🚛' : '🚆'}</span>
                 <div>
                   <div className="text-xs font-bold text-slate-100">
                     {selectedTrain.trainType === 'Goods' ? 'GOODS / FREIGHT TRANSIT' : 'PASSENGER / EXPRESS TRAIN'}
@@ -329,7 +326,7 @@ export default function TrainMovementTimeline({
                 onClick={() => setSelectedTrain(null)}
                 className="text-slate-400 hover:text-slate-200 text-sm font-bold cursor-pointer"
               >
-                ✕
+                X
               </button>
             </div>
 
