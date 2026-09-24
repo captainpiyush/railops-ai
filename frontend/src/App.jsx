@@ -59,17 +59,12 @@ function HomeRedirect() {
 
 function AppRoutes() {
   const { isAuthenticated, role } = useUserRole();
-  const location = useLocation();
-  const isLoginPage = location.pathname === '/login';
 
-  if (isLoginPage) {
+  if (!isAuthenticated) {
     return (
       <Routes>
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to={ROLE_META[role]?.home || '/'} replace /> : <LoginPage />}
-        />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<LoginPage />} />
       </Routes>
     );
   }
@@ -82,22 +77,22 @@ function AppRoutes() {
           {/* Login — redirects to home if already authenticated */}
           <Route
             path="/login"
-            element={isAuthenticated ? <Navigate to={ROLE_META[role]?.home || '/'} replace /> : <LoginPage />}
+            element={<Navigate to={ROLE_META[role]?.home || '/'} replace />}
           />
 
           {/* Home — redirects restricted roles to their designated page */}
-          <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
+          <Route path="/" element={<HomeRedirect />} />
 
           {/* Department dashboards — TMS / SMMS / TDMS / COA view */}
-          <Route path="/department" element={<ProtectedRoute><DepartmentDashboard /></ProtectedRoute>} />
+          <Route path="/department" element={<DepartmentDashboard />} />
 
           {/* BDMS dedicated view (Data Integration + Corridor Time Table) — MUST be before :dept wildcard */}
-          <Route path="/department/bdms" element={<ProtectedRoute><BDMSDashboard /></ProtectedRoute>} />
+          <Route path="/department/bdms" element={<BDMSDashboard />} />
 
           {/* Generic dept param route — catches tms / smms / tdms / coa */}
-          <Route path="/department/:dept" element={<ProtectedRoute><DepartmentDashboard /></ProtectedRoute>} />
+          <Route path="/department/:dept" element={<DepartmentDashboard />} />
 
-          {/* All-access pages (guarded) */}
+          {/* All-access pages (guarded for non-admin) */}
           <Route path="/requests" element={<ProtectedRoute><SubmitRequest /></ProtectedRoute>} />
           <Route path="/integration" element={<ProtectedRoute><DataIntegration /></ProtectedRoute>} />
           <Route path="/optimization" element={<ProtectedRoute><OptimizationEngine /></ProtectedRoute>} />
@@ -105,8 +100,8 @@ function AppRoutes() {
           <Route path="/approval" element={<ProtectedRoute><ApprovalPipeline /></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
 
-          {/* Catch-all — redirect to home or login */}
-          <Route path="*" element={<Navigate to={isAuthenticated ? '/' : '/login'} replace />} />
+          {/* Catch-all — redirect to home */}
+          <Route path="*" element={<Navigate to={ROLE_META[role]?.home || '/'} replace />} />
         </Routes>
       </main>
     </div>

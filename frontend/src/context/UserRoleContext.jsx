@@ -60,8 +60,8 @@ export function UserRoleProvider({ children }) {
   });
 
   // Preserve admin status: if user logged in as ALL or username is 'admin', they are an Admin
-  const authRole = user?.authRole || (user?.username === 'admin' ? 'ALL' : user?.role) || 'ALL';
-  const isAdmin = authRole === 'ALL';
+  const authRole = user ? (user.authRole || (user.username === 'admin' ? 'ALL' : user.role) || 'ALL') : null;
+  const isAdmin = Boolean(user && authRole === 'ALL');
 
   const [role, setRoleState] = useState(() => {
     try {
