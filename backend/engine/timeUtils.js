@@ -6,7 +6,7 @@ const SAFETY_BUFFER_MINUTES = 20;
 
 let demoConfig = {
   isDemoMode: true,
-  effectiveDate: '2026-09-09',
+  effectiveDate: '2026-09-25',
   effectiveTime: '10:00:00'
 };
 

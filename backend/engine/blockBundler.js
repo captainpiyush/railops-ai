@@ -52,7 +52,8 @@ function bundleDefects(defects) {
 
       // Calculate separate vs bundled execution metrics
       const PROTECTION_BUFFER_SEPARATE = 1.0; // 1.0 hr setup/protection per separate block
-      const PROTECTION_BUFFER_SHARED   = 1.5; // 1.5 hr shared protection for coordinated block
+      const deptCount = deptsPresent.length;
+      const PROTECTION_BUFFER_SHARED = deptCount >= 3 ? 2.0 : 1.5;
 
       const separateDurationHrs = multiDeptDefects.reduce(
         (sum, d) => sum + (d.estimatedDurationHrs || d.durationHours || 2) + PROTECTION_BUFFER_SEPARATE,

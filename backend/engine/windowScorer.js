@@ -52,7 +52,7 @@ function scoreCandidateWindow(candidate, constraintResult, bundle = {}) {
 
   // 2. Penalties
   const passengerPenalty = passengerImpact * 30;
-  const freightPenalty = freightImpact * 15;
+  const freightPenalty = freightImpact * 5; // was 15, now 5 as per spec
   const splittingPenalty = canSplit ? 12 : 0;
   const violationPenalty = violations.length * 50;
 

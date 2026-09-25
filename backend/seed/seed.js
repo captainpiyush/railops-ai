@@ -80,47 +80,47 @@ const seedDatabase = async (force = true) => {
 
   // 2. Controlled Active Defects (11 requests across departments & corridors)
   const defectsData = [
-    // ── SCENARIO 1: MULTI-DEPARTMENT BUNDLING 1 (COR-03) ──
+    // ── SCENARIO 1: GOLDEN DEMO BUNDLING (COR-01) ──
     {
       defectCode: 'DEF-0101',
-      assetId: 'TRK-COR3-301',
+      assetId: 'TRK-COR1-301',
       department: 'Track',
       source: 'TMS',
-      corridorId: 'COR-03',
-      estimatedDurationHrs: 2.0,
-      priority: 'HIGH',
-      priorityScore: 88,
+      corridorId: 'COR-01',
+      estimatedDurationHrs: 4.0,
+      priority: 'CRITICAL',
+      priorityScore: 94,
       status: 'PENDING',
       isSplittable: false,
-      workZone: 'Zone-3A',
+      workZone: 'Zone-1A',
       faultDescription: 'Rail gauge widening inspection and sleeper renewal at KM 245.4 near Pune.'
     },
     {
       defectCode: 'DEF-0102',
-      assetId: 'SIG-COR3-302',
+      assetId: 'SIG-COR1-302',
       department: 'Signalling',
       source: 'SMMS',
-      corridorId: 'COR-03',
-      estimatedDurationHrs: 1.5,
+      corridorId: 'COR-01',
+      estimatedDurationHrs: 2.0,
       priority: 'HIGH',
       priorityScore: 84,
       status: 'PENDING',
       isSplittable: false,
-      workZone: 'Zone-3A',
+      workZone: 'Zone-1A',
       faultDescription: 'Point machine electronic interlocking and signal relay inspection at Junction 245.'
     },
     {
       defectCode: 'DEF-0103',
-      assetId: 'OHE-COR3-303',
+      assetId: 'OHE-COR1-303',
       department: 'Traction',
       source: 'TDMS',
-      corridorId: 'COR-03',
-      estimatedDurationHrs: 1.0,
-      priority: 'MEDIUM',
-      priorityScore: 78,
+      corridorId: 'COR-01',
+      estimatedDurationHrs: 2.0,
+      priority: 'HIGH',
+      priorityScore: 84,
       status: 'PENDING',
       isSplittable: false,
-      workZone: 'Zone-3A',
+      workZone: 'Zone-1A',
       faultDescription: 'OHE contact wire dropper replacement and catenary tension adjustment at KM 245.8.'
     },
 
@@ -154,24 +154,23 @@ const seedDatabase = async (force = true) => {
       faultDescription: 'Interlocking equipment maintenance and axle counter calibration at Kanpur junction.'
     },
 
-    // ── SCENARIO 3: PASSENGER-BLOCKED PREFERRED WINDOW (COR-01) ──
+    // ── SCENARIO 3: COR-03 Single ──
     {
       defectCode: 'DEF-0301',
-      assetId: 'TRK-COR1-102',
+      assetId: 'TRK-COR3-102',
       department: 'Track',
       source: 'TMS',
-      corridorId: 'COR-01',
+      corridorId: 'COR-03',
       estimatedDurationHrs: 2.5,
       priority: 'HIGH',
       priorityScore: 82,
       status: 'PENDING',
       isSplittable: false,
-      workZone: 'Zone-1B',
-      preferredStartHour: 9,
-      faultDescription: 'Track geometry correction on UP Main. Preferred morning slot 09:10 blocked by Mumbai Rajdhani Exp (12951).'
+      workZone: 'Zone-3B',
+      faultDescription: 'Track geometry correction on UP Main.'
     },
 
-    // ── SCENARIO 4: FREIGHT-BLOCKED PREFERRED WINDOW (COR-04) ──
+    // ── SCENARIO 4: COR-04 Single ──
     {
       defectCode: 'DEF-0401',
       assetId: 'OHE-COR4-401',
@@ -184,11 +183,10 @@ const seedDatabase = async (force = true) => {
       status: 'PENDING',
       isSplittable: false,
       workZone: 'Zone-4A',
-      preferredStartHour: 10,
-      faultDescription: 'Catenary insulator washing and mast earth checking. Morning slot 10:00 blocked by Iron Ore Heavy Haul GDS-401.'
+      faultDescription: 'Catenary insulator washing and mast earth checking.'
     },
 
-    // ── SCENARIO 5: SPLITTABLE WORK WITH CARRY-FORWARD (COR-05) ──
+    // ── SCENARIO 5: COR-05 Bundle ──
     {
       defectCode: 'DEF-0501',
       assetId: 'TRK-COR5-501',
@@ -202,6 +200,20 @@ const seedDatabase = async (force = true) => {
       isSplittable: true,
       workZone: 'Zone-5C',
       faultDescription: 'Deep ballast screening and sleeper spacing adjustment over 800m segment. Splittable into 3h initial block + 1h carry-forward.'
+    },
+    {
+      defectCode: 'DEF-0502',
+      assetId: 'OHE-COR5-502',
+      department: 'Traction',
+      source: 'TDMS',
+      corridorId: 'COR-05',
+      estimatedDurationHrs: 2.5,
+      priority: 'MEDIUM',
+      priorityScore: 62,
+      status: 'PENDING',
+      isSplittable: false,
+      workZone: 'Zone-5C',
+      faultDescription: 'OHE isolator inspection and pantograph clearance verification at Substation 6.'
     },
 
     // ── SCENARIO 6: ROUTINE ROLLING STOCK & ASSET MAINTENANCE ──
@@ -217,32 +229,6 @@ const seedDatabase = async (force = true) => {
       status: 'PENDING',
       isSplittable: false,
       faultDescription: 'Traction motor brush wear and bogie clearance inspection at Vadodara shed.'
-    },
-    {
-      defectCode: 'DEF-0602',
-      assetId: 'SIG-COR4-412',
-      department: 'Signalling',
-      source: 'SMMS',
-      corridorId: 'COR-04',
-      estimatedDurationHrs: 2.0,
-      priority: 'LOW',
-      priorityScore: 42,
-      status: 'PENDING',
-      isSplittable: true,
-      faultDescription: 'Signalling cable insulation testing and telemetry battery backup check.'
-    },
-    {
-      defectCode: 'DEF-0603',
-      assetId: 'OHE-COR5-502',
-      department: 'Traction',
-      source: 'TDMS',
-      corridorId: 'COR-05',
-      estimatedDurationHrs: 2.5,
-      priority: 'MEDIUM',
-      priorityScore: 62,
-      status: 'PENDING',
-      isSplittable: false,
-      faultDescription: 'OHE isolator inspection and pantograph clearance verification at Substation 6.'
     }
   ];
 
@@ -367,7 +353,7 @@ const seedDatabase = async (force = true) => {
       track: 'UP Main',
       startTime: (() => { const d = new Date(tomorrow); d.setHours(2, 0, 0, 0); return d; })(),
       endTime:   (() => { const d = new Date(tomorrow); d.setHours(5, 30, 0, 0); return d; })(),
-      status: 'APPROVED',
+      status: 'PROPOSED',
       trainImpact: 0,
       conflictFlags: [],
       safetyBufferMinutes: 20,

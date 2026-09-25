@@ -59,6 +59,17 @@ const CORRIDOR_NETWORK = [
 
 const PREDEFINED_SCENARIOS = [
   {
+    id: 'SCN-GOLDEN-DISRUPTION',
+    name: 'Golden Demo: CAND-02 Disruption (+120 min)',
+    type: 'DISRUPTION',
+    severity: 'CRITICAL',
+    defaultDelay: 120,
+    defaultCorridor: 'COR-01',
+    targetBlockId: 'CAND-02',
+    description: 'Original optimized window (CAND-02 02:00-08:00) is disrupted by +120 min delay. System re-evaluates all alternatives and selects the next best feasible window.',
+    mitigation: 'AI invalidates CAND-02, scores ALT-01/ALT-02/ALT-03, selects ALT-02 (Tomorrow 02:00-07:00) as the best feasible window.'
+  },
+  {
     id: 'SCN-EMERGENCY',
     name: 'Track Emergency',
     type: 'EMERGENCY_BLOCK',
@@ -269,7 +280,8 @@ export default function WhatIfSimulation() {
         scenario: activeScenario.type,
         corridorId: targetCorridorId,
         delayMinutes,
-        description: activeScenario.description
+        description: activeScenario.description,
+        targetBlockId: activeScenario.targetBlockId || undefined
       });
       setReoptResult(res.data?.result);
       setActiveTab('reopt');

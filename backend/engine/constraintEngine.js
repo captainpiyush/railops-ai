@@ -191,9 +191,9 @@ function evaluateConstraints({
       const depStr = formatTime(train.departureTime);
       const arrStr = formatTime(train.arrivalTime);
       const reason = `Goods/Freight rake ${train.trainNumber} (${train.trainName || 'Freight'}, ${depStr}–${arrStr}) occupies corridor during requested window (operational priority)`;
-      violations.push(`FREIGHT_MOVEMENT_PRIORITY: ${reason}`);
-      rejectionReasons.push(reason);
-      scorePenalty += 80;
+      // Freight is a scoring penalty, not a hard infeasibility constraint
+      warnings.push(`FREIGHT_SOFT_CONSTRAINT: ${reason}`);
+      scorePenalty += 5; // -5 per freight overlap as per spec
     }
   });
 
