@@ -735,6 +735,8 @@ export default function Dashboard() {
           </div>
         </div>
 
+      </div>
+
       <Toast message={toast.message} type={toast.type} visible={toast.visible} onHide={() => setToast({ ...toast, visible: false })} />
 
       {/* ── REJECTION REASON MODAL WITH OPERATOR JUSTIFICATION TEXTBOX ── */}
