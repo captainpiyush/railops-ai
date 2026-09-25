@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useRailOps } from '../context/RailOpsContext';
 import DataSourceBadge from '../components/DataSourceBadge';
 import PriorityScoreBar from '../components/PriorityScoreBar';
+import RejectionModal from '../components/RejectionModal';
+import Toast from '../components/Toast';
 
 // Static / fallback corridor block window definition
 const DEFAULT_CORRIDOR_WINDOWS = [
@@ -109,7 +111,9 @@ export default function DepartmentDashboard() {
     activeRecommendation,
     recommendationHistory = [],
     effectiveNow,
-    demoClock
+    demoClock,
+    handleAcceptRecommendation,
+    handleRejectRecommendation
   } = useRailOps();
 
   // Active department selection
@@ -122,6 +126,53 @@ export default function DepartmentDashboard() {
   const [selectedCorridorFilter, setSelectedCorridorFilter] = useState('ALL');
   const [selectedDayFilter, setSelectedDayFilter] = useState('ALL');
   const [taskSearchQuery, setTaskSearchQuery] = useState('');
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectTargetPlan, setRejectTargetPlan] = useState(null);
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
+
+  const handleAcceptAi = async (plan) => {
+    try {
+      const res = await handleAcceptRecommendation(activeRecommendation?._id || 'REC-GOLDEN-01');
+      setToast({
+        visible: true,
+        message: res?.message || `Block ${plan?.blockId || 'BLK-01'} approved & scheduled!`,
+        type: 'success'
+      });
+    } catch (err) {
+      setToast({
+        visible: true,
+        message: `Accept failed: ${err.message}`,
+        type: 'error'
+      });
+    }
+  };
+
+  const handleOpenReject = (plan) => {
+    setRejectTargetPlan(plan);
+    setIsRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = async (reason) => {
+    try {
+      await handleRejectRecommendation(
+        activeRecommendation?._id || 'REC-GOLDEN-01',
+        reason,
+        `${activeDeptObj.shortName} Controller`
+      );
+      setIsRejectModalOpen(false);
+      setToast({
+        visible: true,
+        message: 'Plan rejected and permanently logged in audit history.',
+        type: 'info'
+      });
+    } catch (err) {
+      setToast({
+        visible: true,
+        message: `Reject failed: ${err.message}`,
+        type: 'error'
+      });
+    }
+  };
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. TABLE 1: TASK PLAN RECOMMENDED BY AI
@@ -613,15 +664,34 @@ export default function DepartmentDashboard() {
                         </div>
                       </td>
 
-                      {/* Status / Tag */}
+                      {/* Status & Actions */}
                       <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                          plan.status === 'APPROVED' || plan.status === 'SCHEDULED'
-                            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                            : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
-                        }`}>
-                          {plan.statusLabel}
-                        </span>
+                        {plan.status === 'RECOMMENDED_ACTIVE' ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleAcceptAi(plan)}
+                              className="px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[10px] uppercase tracking-wider transition-all shadow cursor-pointer"
+                            >
+                              ACCEPT
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenReject(plan)}
+                              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-red-500/20 text-red-400 border border-slate-700 hover:border-red-500/40 text-[10px] uppercase tracking-wider transition-all cursor-pointer"
+                            >
+                              REJECT
+                            </button>
+                          </div>
+                        ) : (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                            plan.status === 'APPROVED' || plan.status === 'SCHEDULED'
+                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-bold'
+                              : 'bg-blue-500/15 text-blue-400 border-blue-500/30'
+                          }`}>
+                            {plan.statusLabel}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -952,6 +1022,15 @@ export default function DepartmentDashboard() {
 
       </div>
 
+      <Toast message={toast.message} type={toast.type} visible={toast.visible} onHide={() => setToast({ ...toast, visible: false })} />
+
+      <RejectionModal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onSubmit={handleConfirmReject}
+        title="Reject AI Recommended Maintenance Package"
+        targetName={rejectTargetPlan?.blockId || 'CAND-02 Coordinated Package'}
+      />
     </div>
   );
 }

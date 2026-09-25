@@ -5,6 +5,7 @@ import KPICard from '../components/KPICard';
 import NativeTimeline from '../components/NativeTimeline';
 import TrainMovementTimeline from '../components/TrainMovementTimeline';
 import ApprovalDrawer from '../components/ApprovalDrawer';
+import RejectionModal from '../components/RejectionModal';
 import Toast from '../components/Toast';
 import api from '../api/axios';
 
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const [selectedDayOffset, setSelectedDayOffset] = useState(0); // -1: Yesterday, 0: Today, 1: Tomorrow
   const [actionLoading, setActionLoading] = useState(false);
   const [aiCommitLoading, setAiCommitLoading] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
   const [activeConflict, setActiveConflict] = useState(null);
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
@@ -183,15 +185,26 @@ export default function Dashboard() {
     }
   };
 
-  // Reject recommendation
-  const handleRejectAi = async () => {
+  // Open Reject Modal
+  const handleRejectAi = () => {
+    if (!activeRecommendation) return;
+    setIsRejectModalOpen(true);
+  };
+
+  // Confirm Reject with reason from modal
+  const handleConfirmRejectAi = async (reason) => {
     if (!activeRecommendation) return;
     try {
       setAiCommitLoading(true);
-      await handleRejectRecommendation(activeRecommendation._id, 'Operator rejected from Dashboard');
+      await handleRejectRecommendation(
+        activeRecommendation._id,
+        reason,
+        'Senior Divisional Operations Manager (Sr. DOM)'
+      );
+      setIsRejectModalOpen(false);
       setToast({
         visible: true,
-        message: 'Recommendation rejected and preserved in operations audit ledger.',
+        message: 'Recommendation rejected and permanently recorded in operations audit history.',
         type: 'info',
       });
     } catch (err) {
@@ -722,9 +735,17 @@ export default function Dashboard() {
           </div>
         </div>
 
-      </div>
-
       <Toast message={toast.message} type={toast.type} visible={toast.visible} onHide={() => setToast({ ...toast, visible: false })} />
+
+      {/* ── REJECTION REASON MODAL WITH OPERATOR JUSTIFICATION TEXTBOX ── */}
+      <RejectionModal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+        onSubmit={handleConfirmRejectAi}
+        title="Reject AI Recommended Maintenance Package"
+        targetName={`CAND-02 (COR-01 Coordinated Block 02:00–08:00)`}
+        isLoading={aiCommitLoading}
+      />
 
       {/* ── OPERATIONAL CONFLICT MODAL (NO BLIND +30 MINUTE SHIFTING) ── */}
       {activeConflict && (() => {
