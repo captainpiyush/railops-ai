@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRailOps } from '../context/RailOpsContext';
 import DataSourceBadge from '../components/DataSourceBadge';
+import RejectionModal from '../components/RejectionModal';
+import Toast from '../components/Toast';
 
 const CORRIDOR_METADATA = {
   'COR-01': { name: 'Delhi - Mumbai',    fromStation: 'NDLS', toStation: 'CSMT', km: 1384 },
@@ -38,8 +40,72 @@ export default function BDMSDashboard() {
     corridorWindows = [],
     activeRecommendation,
     recommendationHistory = [],
+    handleApproveDefect,
+    handleRejectDefect,
+    handleAcceptRecommendation,
+    handleRejectRecommendation,
     effectiveNow
   } = useRailOps();
+
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectTargetDefect, setRejectTargetDefect] = useState(null);
+  const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
+
+  const handleAcceptTask = async (task) => {
+    try {
+      if (task.suggestedBundleId === 'BNDL-COR1-01' || ['DEF-0101', 'DEF-0102', 'DEF-0103'].includes(task.defectCode)) {
+        const res = await handleAcceptRecommendation(activeRecommendation?._id || 'REC-GOLDEN-01');
+        setToast({
+          visible: true,
+          message: res.message || `Task ${task.defectCode} & AI Bundle Approved & Scheduled!`,
+          type: 'success'
+        });
+      } else {
+        await handleApproveDefect(task._id || task.defectCode);
+        setToast({
+          visible: true,
+          message: `Task ${task.defectCode || task.assetId} Approved & Scheduled!`,
+          type: 'success'
+        });
+      }
+    } catch (err) {
+      setToast({
+        visible: true,
+        message: `Accept failed: ${err.message}`,
+        type: 'error'
+      });
+    }
+  };
+
+  const handleOpenRejectTask = (task) => {
+    setRejectTargetDefect(task);
+    setIsRejectModalOpen(true);
+  };
+
+  const handleConfirmReject = async (reason) => {
+    try {
+      if (rejectTargetDefect) {
+        if (rejectTargetDefect.suggestedBundleId === 'BNDL-COR1-01' || ['DEF-0101', 'DEF-0102', 'DEF-0103'].includes(rejectTargetDefect.defectCode)) {
+          await handleRejectRecommendation(activeRecommendation?._id || 'REC-GOLDEN-01', reason, 'BDMS Controller');
+        } else {
+          await handleRejectDefect(rejectTargetDefect._id || rejectTargetDefect.defectCode, reason);
+        }
+        setToast({
+          visible: true,
+          message: `Task ${rejectTargetDefect.defectCode || rejectTargetDefect._id} Rejected — Recorded in audit ledger`,
+          type: 'info'
+        });
+        setRejectTargetDefect(null);
+      }
+      setIsRejectModalOpen(false);
+    } catch (err) {
+      setToast({
+        visible: true,
+        message: `Reject failed: ${err.message}`,
+        type: 'error'
+      });
+    }
+  };
 
   // ── BDMS Tasks with AI suggested task/bundle detection ───────────────────
   const bdmsTasks = useMemo(() => {
@@ -231,13 +297,14 @@ export default function BDMSDashboard() {
                   <th className="py-2.5 px-4 font-semibold">Department</th>
                   <th className="py-2.5 px-4 font-semibold">Priority</th>
                   <th className="py-2.5 px-4 font-semibold">Corridor</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">AI Recommendation</th>
+                  <th className="py-2.5 px-4 font-semibold text-center">AI Recommendation</th>
+                  <th className="py-2.5 px-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 font-mono-rail">
                 {bdmsTasks.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500 text-xs">
+                    <td colSpan={8} className="py-8 text-center text-slate-500 text-xs">
                       No tasks found.
                     </td>
                   </tr>
@@ -275,7 +342,7 @@ export default function BDMSDashboard() {
                       <td className="py-2.5 px-4 text-slate-400 whitespace-nowrap">
                         {d.corridorId || 'COR-01'}
                       </td>
-                      <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                      <td className="py-2.5 px-4 text-center whitespace-nowrap">
                         {d.isAiSuggested ? (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                             AI SUGGESTED BUNDLE
@@ -285,6 +352,36 @@ export default function BDMSDashboard() {
                             Standard
                           </span>
                         )}
+                      </td>
+                      <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {d.status === 'APPROVED' ? (
+                            <span className="text-[8px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">
+                              APPROVED
+                            </span>
+                          ) : d.status === 'REJECTED' ? (
+                            <span className="text-[8px] px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold border border-red-500/40">
+                              REJECTED
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleAcceptTask(d)}
+                                className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[8px] uppercase tracking-wider transition-all shadow cursor-pointer"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenRejectTask(d)}
+                                className="px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-red-400 border border-slate-700 hover:border-red-500/40 font-bold text-[8px] uppercase tracking-wider transition-all cursor-pointer"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -448,6 +545,20 @@ export default function BDMSDashboard() {
         </div>
 
       </div>
+
+      <Toast message={toast.message} type={toast.type} visible={toast.visible} onHide={() => setToast({ ...toast, visible: false })} />
+
+      {/* ── REJECTION MODAL ── */}
+      <RejectionModal
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setRejectTargetDefect(null);
+        }}
+        onSubmit={handleConfirmReject}
+        title={rejectTargetDefect ? "Reject Maintenance Task" : "Reject Block Proposal"}
+        targetName={rejectTargetDefect ? `Task ${rejectTargetDefect.defectCode || rejectTargetDefect._id} (${rejectTargetDefect.department || 'BDMS'})` : "CAND-02: Coordinated Maintenance Package"}
+      />
     </div>
   );
 }

@@ -113,7 +113,9 @@ export default function DepartmentDashboard() {
     effectiveNow,
     demoClock,
     handleAcceptRecommendation,
-    handleRejectRecommendation
+    handleRejectRecommendation,
+    handleApproveDefect,
+    handleRejectDefect
   } = useRailOps();
 
   // Active department selection
@@ -128,6 +130,7 @@ export default function DepartmentDashboard() {
   const [taskSearchQuery, setTaskSearchQuery] = useState('');
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejectTargetPlan, setRejectTargetPlan] = useState(null);
+  const [rejectTargetTask, setRejectTargetTask] = useState(null);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
 
   const handleAcceptAi = async (plan) => {
@@ -149,22 +152,57 @@ export default function DepartmentDashboard() {
 
   const handleOpenReject = (plan) => {
     setRejectTargetPlan(plan);
+    setRejectTargetTask(null);
+    setIsRejectModalOpen(true);
+  };
+
+  const handleAcceptSingleTask = async (task) => {
+    try {
+      await handleApproveDefect(task._id || task.defectCode);
+      setToast({
+        visible: true,
+        message: `Task ${task.defectCode || task.assetId} approved & block possession allocated!`,
+        type: 'success'
+      });
+    } catch (err) {
+      setToast({
+        visible: true,
+        message: `Accept failed: ${err.message}`,
+        type: 'error'
+      });
+    }
+  };
+
+  const handleOpenRejectTask = (task) => {
+    setRejectTargetTask(task);
+    setRejectTargetPlan(null);
     setIsRejectModalOpen(true);
   };
 
   const handleConfirmReject = async (reason) => {
     try {
-      await handleRejectRecommendation(
-        activeRecommendation?._id || 'REC-GOLDEN-01',
-        reason,
-        `${activeDeptObj.shortName} Controller`
-      );
+      if (rejectTargetTask) {
+        await handleRejectDefect(rejectTargetTask._id || rejectTargetTask.defectCode, reason);
+        setToast({
+          visible: true,
+          message: `Task ${rejectTargetTask.defectCode || rejectTargetTask._id} rejected — Recorded in audit history`,
+          type: 'info'
+        });
+        setRejectTargetTask(null);
+      } else {
+        await handleRejectRecommendation(
+          activeRecommendation?._id || 'REC-GOLDEN-01',
+          reason,
+          `${activeDeptObj.shortName} Controller`
+        );
+        setToast({
+          visible: true,
+          message: 'Plan rejected and permanently logged in audit history.',
+          type: 'info'
+        });
+        setRejectTargetPlan(null);
+      }
       setIsRejectModalOpen(false);
-      setToast({
-        visible: true,
-        message: 'Plan rejected and permanently logged in audit history.',
-        type: 'info'
-      });
     } catch (err) {
       setToast({
         visible: true,
@@ -821,12 +859,28 @@ export default function DepartmentDashboard() {
 
                       {/* Action */}
                       <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <button
-                          onClick={() => navigate('/optimization')}
-                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-700 text-[10px] font-bold transition-all cursor-pointer"
-                        >
-                          Allocate Window →
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleAcceptSingleTask(task)}
+                            className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[9px] uppercase tracking-wider transition-all shadow cursor-pointer"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenRejectTask(task)}
+                            className="px-2 py-1 rounded bg-slate-800 hover:bg-red-500/20 text-red-400 border border-slate-700 hover:border-red-500/40 text-[9px] uppercase tracking-wider transition-all cursor-pointer"
+                          >
+                            Reject
+                          </button>
+                          <button
+                            onClick={() => navigate('/optimization')}
+                            className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-700 text-[9px] font-bold transition-all cursor-pointer"
+                          >
+                            Allocate →
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -1026,10 +1080,14 @@ export default function DepartmentDashboard() {
 
       <RejectionModal
         isOpen={isRejectModalOpen}
-        onClose={() => setIsRejectModalOpen(false)}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setRejectTargetPlan(null);
+          setRejectTargetTask(null);
+        }}
         onSubmit={handleConfirmReject}
-        title="Reject AI Recommended Maintenance Package"
-        targetName={rejectTargetPlan?.blockId || 'CAND-02 Coordinated Package'}
+        title={rejectTargetTask ? "Reject Maintenance Task" : "Reject AI Recommended Maintenance Package"}
+        targetName={rejectTargetTask ? `Task ${rejectTargetTask.defectCode} (${rejectTargetTask.department || activeDeptObj.shortName})` : (rejectTargetPlan?.blockId || 'CAND-02 Coordinated Package')}
       />
     </div>
   );

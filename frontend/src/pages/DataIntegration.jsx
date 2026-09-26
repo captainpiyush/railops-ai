@@ -24,6 +24,8 @@ export default function DataIntegration() {
     activeRecommendation,
     handleAcceptRecommendation,
     handleRejectRecommendation,
+    handleApproveDefect,
+    handleRejectDefect,
     refreshData
   } = useRailOps();
   
@@ -32,6 +34,7 @@ export default function DataIntegration() {
   const [metrics, setMetrics] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectTargetDefect, setRejectTargetDefect] = useState(null);
   const [isAccepting, setIsAccepting] = useState(false);
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' });
   const intervalRef = useRef(null);
@@ -130,21 +133,68 @@ export default function DataIntegration() {
     }
   };
 
+  // Handle Accept Single Task Action
+  const handleAcceptTask = async (task) => {
+    try {
+      if (task.suggestedBundleId === 'BNDL-COR1-01' || ['DEF-0101', 'DEF-0102', 'DEF-0103'].includes(task.defectCode)) {
+        const res = await handleAcceptRecommendation(activeRecommendation?._id || 'REC-GOLDEN-01');
+        setToast({
+          visible: true,
+          message: res.message || `Task ${task.defectCode} & AI Bundle Approved & Scheduled!`,
+          type: 'success'
+        });
+      } else {
+        await handleApproveDefect(task._id || task.defectCode);
+        setToast({
+          visible: true,
+          message: `Task ${task.defectCode || task.assetId} Approved & Scheduled!`,
+          type: 'success'
+        });
+      }
+    } catch (err) {
+      setToast({
+        visible: true,
+        message: `Accept failed: ${err.message}`,
+        type: 'error'
+      });
+    }
+  };
+
   // Handle Reject Bundle Action
   const handleRejectBundle = () => {
+    setRejectTargetDefect(null);
+    setIsRejectModalOpen(true);
+  };
+
+  // Handle Reject Single Task Action
+  const handleOpenRejectTask = (task) => {
+    setRejectTargetDefect(task);
     setIsRejectModalOpen(true);
   };
 
   const handleConfirmReject = async (reason) => {
-    if (!activeRecommendation) return;
     try {
-      await handleRejectRecommendation(activeRecommendation._id, reason);
+      if (rejectTargetDefect) {
+        if (rejectTargetDefect.suggestedBundleId === 'BNDL-COR1-01' || ['DEF-0101', 'DEF-0102', 'DEF-0103'].includes(rejectTargetDefect.defectCode)) {
+          await handleRejectRecommendation(activeRecommendation?._id || 'REC-GOLDEN-01', reason);
+        } else {
+          await handleRejectDefect(rejectTargetDefect._id || rejectTargetDefect.defectCode, reason);
+        }
+        setToast({
+          visible: true,
+          message: `Task ${rejectTargetDefect.defectCode || rejectTargetDefect._id} Rejected — Stamped in Operations Audit History`,
+          type: 'info'
+        });
+        setRejectTargetDefect(null);
+      } else if (activeRecommendation) {
+        await handleRejectRecommendation(activeRecommendation._id, reason);
+        setToast({
+          visible: true,
+          message: 'AI Bundle Rejected — Stamped in Operations Audit History',
+          type: 'info'
+        });
+      }
       setIsRejectModalOpen(false);
-      setToast({
-        visible: true,
-        message: 'AI Bundle Rejected — Stamped in Operations Audit History',
-        type: 'info'
-      });
     } catch (err) {
       setToast({
         visible: true,
@@ -335,19 +385,32 @@ export default function DataIntegration() {
                       </td>
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[8px] uppercase tracking-wider transition-all shadow cursor-pointer disabled:opacity-50"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setIsRejectModalOpen(true)}
-                            className="px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-red-400 border border-slate-700 hover:border-red-500/40 font-bold text-[8px] uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
-                          >
-                            Reject
-                          </button>
+                          {d.status === 'APPROVED' ? (
+                            <span className="text-[8px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40">
+                              APPROVED
+                            </span>
+                          ) : d.status === 'REJECTED' ? (
+                            <span className="text-[8px] px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold border border-red-500/40">
+                              REJECTED
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleAcceptTask(d)}
+                                className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[8px] uppercase tracking-wider transition-all shadow cursor-pointer disabled:opacity-50"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenRejectTask(d)}
+                                className="px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-red-400 border border-slate-700 hover:border-red-500/40 font-bold text-[8px] uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -414,10 +477,13 @@ export default function DataIntegration() {
       {/* ── REJECTION REASON MODAL WITH OPERATOR JUSTIFICATION TEXTBOX ── */}
       <RejectionModal
         isOpen={isRejectModalOpen}
-        onClose={() => setIsRejectModalOpen(false)}
+        onClose={() => {
+          setIsRejectModalOpen(false);
+          setRejectTargetDefect(null);
+        }}
         onSubmit={handleConfirmReject}
-        title="Reject AI Suggested Task / Bundle"
-        targetName="CAND-02: DEF-0101 + DEF-0102 + DEF-0103 Coordinated Bundle"
+        title={rejectTargetDefect ? "Reject Maintenance Task" : "Reject AI Suggested Task / Bundle"}
+        targetName={rejectTargetDefect ? `Task ${rejectTargetDefect.defectCode || rejectTargetDefect._id} (${rejectTargetDefect.department || 'Maintenance'})` : "CAND-02: DEF-0101 + DEF-0102 + DEF-0103 Coordinated Bundle"}
       />
     </div>
   );
