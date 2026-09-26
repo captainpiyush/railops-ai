@@ -244,7 +244,7 @@ export default function Topbar() {
         {/* ── Demo Clock ─────────────────────────────────────────────── */}
         <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 border border-slate-700 font-mono-rail text-[10px]">
           <span className="text-amber-600 dark:text-amber-400 font-bold">DEMO:</span>
-          <span className="text-slate-300">09 Sep 2026, 10:00</span>
+          <span className="text-slate-300">25 Sep 2026, 10:00</span>
         </div>
 
         {/* ── Reset Demo (Admin/COA) ─────────────────────────────── */}

@@ -266,7 +266,8 @@ export default function DataIntegration() {
                   <th className="p-3 text-[9px] uppercase text-slate-400 border-b border-slate-800">Duration</th>
                   <th className="p-3 text-[9px] uppercase text-slate-400 border-b border-slate-800">Corridor</th>
                   <th className="p-3 text-[9px] uppercase text-slate-400 border-b border-slate-800">Status</th>
-                  <th className="p-3 text-[9px] uppercase text-slate-400 border-b border-slate-800 text-right">AI Recommendation</th>
+                  <th className="p-3 text-[9px] uppercase text-slate-400 border-b border-slate-800 text-center">AI Recommendation</th>
+                  <th className="p-3 text-[9px] uppercase text-slate-400 border-b border-slate-800 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -320,7 +321,7 @@ export default function DataIntegration() {
                           {d.status || 'PENDING'}
                         </span>
                       </td>
-                      <td className="p-3 text-right">
+                      <td className="p-3 text-center">
                         {isAiSuggested ? (
                           <span className="text-[8px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold whitespace-nowrap">
                             AI BUNDLED (02:00–08:00)
@@ -328,6 +329,23 @@ export default function DataIntegration() {
                         ) : (
                           <span className="text-[8px] text-slate-500">Standard</span>
                         )}
+                      </td>
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[8px] uppercase tracking-wider transition-all shadow cursor-pointer disabled:opacity-50"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsRejectModalOpen(true)}
+                            className="px-2 py-0.5 rounded bg-slate-800 hover:bg-red-500/20 text-red-400 border border-slate-700 hover:border-red-500/40 font-bold text-[8px] uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
