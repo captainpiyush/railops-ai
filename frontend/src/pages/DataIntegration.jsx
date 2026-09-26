@@ -4,6 +4,7 @@ import { useRailOps } from '../context/RailOpsContext';
 import DataSourceBadge from '../components/DataSourceBadge';
 import RejectionModal from '../components/RejectionModal';
 import Toast from '../components/Toast';
+import { useUserRole } from '../context/UserRoleContext';
 
 const PIPELINE_SOURCES = [
   { id: 'TMS', name: 'TMS', desc: 'Track Management', defaultCount: 35 },
@@ -25,6 +26,8 @@ export default function DataIntegration() {
     handleRejectRecommendation,
     refreshData
   } = useRailOps();
+  
+  const { role, isAdmin } = useUserRole();
 
   const [metrics, setMetrics] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -234,7 +237,7 @@ export default function DataIntegration() {
       )}
 
       {/* ── LOWER SECTION: UNIFIED TASK FEED + LIVE SOURCE MONITOR ── */}
-      <div className="flex-1 grid grid-cols-[1fr_340px] gap-4 overflow-hidden min-h-0">
+      <div className={`flex-1 grid ${(isAdmin || role === 'ALL') ? 'grid-cols-[1fr_340px]' : 'grid-cols-1'} gap-4 overflow-hidden min-h-0`}>
         
         {/* Left Table: Defect Ingestion Feed */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden shadow-xl">
@@ -356,52 +359,54 @@ export default function DataIntegration() {
         </div>
 
         {/* Right Panel: Live Source Health Monitoring */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden shadow-xl">
-          <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between bg-slate-800/50">
-            <h2 className="text-xs font-bold text-slate-200">
-              SOURCE HEALTH MONITOR
-            </h2>
-            <span className="text-[9px] text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              LIVE
-            </span>
-          </div>
+        {(isAdmin || role === 'ALL') && (
+          <div className="bg-slate-900 border border-slate-800 rounded-xl flex flex-col overflow-hidden shadow-xl">
+            <div className="px-4 py-2.5 border-b border-slate-800 flex items-center justify-between bg-slate-800/50">
+              <h2 className="text-xs font-bold text-slate-200">
+                SOURCE HEALTH MONITOR
+              </h2>
+              <span className="text-[9px] text-emerald-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                LIVE
+              </span>
+            </div>
 
-          <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5">
-            {sourcesList.map(s => {
-              const isSpike = parseFloat(s.errorRate) > 0;
-              const isHighLatency = s.latency > 100;
-              const isHealthy = s.isOnline && !isSpike && !isHighLatency;
+            <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5">
+              {sourcesList.map(s => {
+                const isSpike = parseFloat(s.errorRate) > 0;
+                const isHighLatency = s.latency > 100;
+                const isHealthy = s.isOnline && !isSpike && !isHighLatency;
 
-              return (
-                <div
-                  key={s.id || s.name}
-                  className="bg-slate-800/50 border border-slate-800 rounded-lg p-2.5 flex flex-col gap-1.5 hover:border-slate-700 transition-colors"
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <DataSourceBadge source={s.name} />
-                      <span className="text-[9px] text-slate-400 truncate max-w-[140px]">
-                        {s.desc}
-                      </span>
+                return (
+                  <div
+                    key={s.id || s.name}
+                    className="bg-slate-800/50 border border-slate-800 rounded-lg p-2.5 flex flex-col gap-1.5 hover:border-slate-700 transition-colors"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <DataSourceBadge source={s.name} />
+                        <span className="text-[9px] text-slate-400 truncate max-w-[140px]">
+                          {s.desc}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <div className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                        <span className="text-[8px] text-slate-400">{s.status}</span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <div className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
-                      <span className="text-[8px] text-slate-400">{s.status}</span>
+                    <div className="flex items-center justify-between text-[8px] text-slate-400 pt-1 border-t border-slate-800">
+                      <span>Records: <strong className="text-slate-200">{s.records}</strong></span>
+                      <span>Latency: <strong className={getLatencyColor(s.latency)}>{s.latency}ms</strong></span>
+                      <span>Errors: <strong className={isSpike ? 'text-red-400' : 'text-slate-400'}>{s.errorRate}</strong></span>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between text-[8px] text-slate-400 pt-1 border-t border-slate-800">
-                    <span>Records: <strong className="text-slate-200">{s.records}</strong></span>
-                    <span>Latency: <strong className={getLatencyColor(s.latency)}>{s.latency}ms</strong></span>
-                    <span>Errors: <strong className={isSpike ? 'text-red-400' : 'text-slate-400'}>{s.errorRate}</strong></span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <Toast message={toast.message} type={toast.type} visible={toast.visible} onHide={() => setToast({ ...toast, visible: false })} />
