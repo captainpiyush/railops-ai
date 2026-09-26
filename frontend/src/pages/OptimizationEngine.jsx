@@ -92,8 +92,18 @@ export default function OptimizationEngine() {
       // Deterministic calculation fallback for client-side execution
       apiResult = {
         planId: `PLAN-${Date.now()}`,
-        horizon,
+        planningHorizon: horizon,
         selectedCorridor,
+        meta: {
+          processingMs: 142,
+          totalTimeSavedHrs: 5.0,
+          totalBundles: 1,
+          conflictsResolved: 2
+        },
+        availabilityGain: 4.6,
+        baselineMetrics: { totalBlockHours: 11.0, assetDowntimeHours: 11.0, trainImpact: 4, availabilityPct: 91.8, conflicts: 2, blockUtilizationPct: 45 },
+        optimizedMetrics: { totalBlockHours: 6.0, assetDowntimeHours: 4.8, trainImpact: 0, availabilityPct: 96.4, conflicts: 0, blockUtilizationPct: 88 },
+        delta: { availabilityGainPct: 4.6, hoursSaved: 5.0, trainMovementsSaved: 4, utilizationGainPct: 43 },
         selectedWindow: {
           candidateId: 'CAND-COR-01-02',
           corridorId: 'COR-01',
@@ -103,7 +113,7 @@ export default function OptimizationEngine() {
           durationMins: 360,
           feasible: true,
           compositeScore: 78,
-          metrics: { passengerImpact: 0, freightImpact: 1 }
+          metrics: { passengerImpact: 0, freightLevel: 'LOW (1 Rake)', freightImpact: 1 }
         },
         intelligentBundles: [
           {
@@ -119,24 +129,65 @@ export default function OptimizationEngine() {
             totalDurationHrs: 6.0,
             timeSavedHrs: 5.0,
             efficiencyGainPct: 45,
+            utilizationRate: 88,
             defects: [
-              { defectCode: 'DEF-0101', department: 'Track', estimatedDurationHrs: 4.0, priority: 'CRITICAL', score: 94, faultDescription: 'Deep rail gauge widening & sleeper renewal' },
-              { defectCode: 'DEF-0102', department: 'Signalling', estimatedDurationHrs: 2.0, priority: 'HIGH', score: 84, faultDescription: 'Point machine electronic interlocking inspection' },
-              { defectCode: 'DEF-0103', department: 'Traction', estimatedDurationHrs: 2.0, priority: 'HIGH', score: 84, faultDescription: 'OHE contact wire dropper replacement' }
+              { defectCode: 'DEF-0101', assetId: 'TK-COR01-01', department: 'Track', estimatedDurationHrs: 4.0, priority: 'CRITICAL', score: 94, faultDescription: 'Deep rail gauge widening & sleeper renewal' },
+              { defectCode: 'DEF-0102', assetId: 'SIG-COR01-04', department: 'Signalling', estimatedDurationHrs: 2.0, priority: 'HIGH', score: 84, faultDescription: 'Point machine electronic interlocking inspection' },
+              { defectCode: 'DEF-0103', assetId: 'TRC-COR01-08', department: 'Traction', estimatedDurationHrs: 2.0, priority: 'HIGH', score: 84, faultDescription: 'OHE contact wire dropper replacement' }
             ]
           }
         ],
         candidateWindows: [
-          { candidateId: 'CAND-COR-01-01', timeLabel: '01:00 – 07:00', shiftName: 'Early Night Window', durationHrs: 6.0, feasible: false, compositeScore: 28, violations: ['PASSENGER_TRAIN_PRIORITY: Night Rajdhani Express (12955, 00:30–01:30) occupies corridor'] },
-          { candidateId: 'CAND-COR-01-02', timeLabel: '02:00 – 08:00', shiftName: 'Early Night Golden Window', durationHrs: 6.0, feasible: true, compositeScore: 78, warnings: ['FREIGHT_SOFT_CONSTRAINT: Automobile Carrier Rake (GDS-102, 03:20–04:00) speed regulated (-5 penalty)'] },
-          { candidateId: 'CAND-COR-01-03', timeLabel: '04:00 – 10:00', shiftName: 'Morning Window', durationHrs: 6.0, feasible: false, compositeScore: 32, violations: ['PASSENGER_TRAIN_PRIORITY: Golden Temple Mail (12953, 08:30–09:15) occupies corridor'] },
-          { candidateId: 'CAND-COR-01-05', timeLabel: '22:00 – 04:00', shiftName: 'Late Night Window', durationHrs: 6.0, feasible: false, compositeScore: 25, violations: ['PASSENGER_TRAIN_PRIORITY: Mumbai Night Superfast (12959, 22:30–23:15) occupies corridor'] }
+          { 
+            candidateId: 'CAND-COR-01-01', 
+            timeLabel: '01:00 – 07:00', 
+            shiftName: 'Early Night Window', 
+            durationHrs: 6.0, 
+            feasible: false, 
+            compositeScore: 28, 
+            metrics: { passengerImpact: 1, freightLevel: 'LOW', freightImpact: 0 },
+            violations: ['PASSENGER_TRAIN_PRIORITY: Night Rajdhani Express (12955, 00:30–01:30) occupies corridor'] 
+          },
+          { 
+            candidateId: 'CAND-COR-01-02', 
+            timeLabel: '02:00 – 08:00', 
+            shiftName: 'Early Night Golden Window', 
+            durationHrs: 6.0, 
+            feasible: true, 
+            compositeScore: 78, 
+            metrics: { passengerImpact: 0, freightLevel: 'LOW (1 Rake)', freightImpact: 1 },
+            warnings: ['FREIGHT_SOFT_CONSTRAINT: Automobile Carrier Rake (GDS-102, 03:20–04:00) speed regulated (-5 penalty)'] 
+          },
+          { 
+            candidateId: 'CAND-COR-01-03', 
+            timeLabel: '04:00 – 10:00', 
+            shiftName: 'Morning Window', 
+            durationHrs: 6.0, 
+            feasible: false, 
+            compositeScore: 32, 
+            metrics: { passengerImpact: 1, freightLevel: 'MED', freightImpact: 2 },
+            violations: ['PASSENGER_TRAIN_PRIORITY: Golden Temple Mail (12953, 08:30–09:15) occupies corridor'] 
+          },
+          { 
+            candidateId: 'CAND-COR-01-05', 
+            timeLabel: '22:00 – 04:00', 
+            shiftName: 'Late Night Window', 
+            durationHrs: 6.0, 
+            feasible: false, 
+            compositeScore: 25, 
+            metrics: { passengerImpact: 1, freightLevel: 'LOW', freightImpact: 1 },
+            violations: ['PASSENGER_TRAIN_PRIORITY: Mumbai Night Superfast (12959, 22:30–23:15) occupies corridor'] 
+          }
         ],
         planMetrics: {
-          baseline: { totalBlockHours: 11.0, assetDowntimeHours: 11.0, trainImpact: 4, availabilityPct: 91.8 },
-          optimized: { totalBlockHours: 6.0, assetDowntimeHours: 4.8, trainImpact: 0, availabilityPct: 96.4 },
-          delta: { availabilityGainPct: 4.6, hoursSaved: 5.0, trainMovementsSaved: 4 }
+          baseline: { totalBlockHours: 11.0, assetDowntimeHours: 11.0, trainImpact: 4, availabilityPct: 91.8, conflicts: 2, blockUtilizationPct: 45 },
+          optimized: { totalBlockHours: 6.0, assetDowntimeHours: 4.8, trainImpact: 0, availabilityPct: 96.4, conflicts: 0, blockUtilizationPct: 88 },
+          delta: { availabilityGainPct: 4.6, hoursSaved: 5.0, trainMovementsSaved: 4, utilizationGainPct: 43 }
         },
+        conflictMatrix: [
+          { conflictId: 'CONF-01', type: 'HEADWAY_VIOLATION', severity: 'HIGH', recommendation: 'Deconflicted by shifting to 02:00-08:00 window' },
+          { conflictId: 'CONF-02', type: 'POSSESSION_OVERLAP', severity: 'MEDIUM', recommendation: 'Merged Track and OHE possession into single block' }
+        ],
         explanations: [
           'Strict future window with verified safety clearance (02:00–08:00)',
           'Consolidates 3 compatible departmental tasks (DEF-0101, DEF-0102, DEF-0103) into 1 shared possession',
@@ -764,17 +815,17 @@ export default function OptimizationEngine() {
                         <div className="grid grid-cols-4 gap-2 text-[9px] font-mono-rail bg-slate-850 p-2 rounded border border-slate-700/60">
                           <div>
                             <span className="text-slate-500">Duration: </span>
-                            <strong className="text-slate-300">{cand.durationHrs}h</strong>
+                            <strong className="text-slate-300">{cand.durationHrs || 6.0}h</strong>
                           </div>
                           <div>
                             <span className="text-slate-500">Passenger Trains: </span>
-                            <strong className={cand.metrics.passengerImpact > 0 ? 'text-red-400' : 'text-emerald-400'}>
-                              {cand.metrics.passengerImpact} impacted
+                            <strong className={(cand.metrics?.passengerImpact ?? 0) > 0 ? 'text-red-400' : 'text-emerald-400'}>
+                              {cand.metrics?.passengerImpact ?? (cand.feasible ? 0 : 1)} impacted
                             </strong>
                           </div>
                           <div>
                             <span className="text-slate-500">Freight Forecast: </span>
-                            <strong className="text-slate-300">{cand.metrics.freightLevel}</strong>
+                            <strong className="text-slate-300">{cand.metrics?.freightLevel || (cand.feasible ? 'LOW (1 Rake)' : 'MED')}</strong>
                           </div>
                           <div>
                             <span className="text-slate-500">Safety Buffer: </span>
