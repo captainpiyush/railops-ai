@@ -171,5 +171,4 @@ PRE-COMMIT VALIDATION (validateBeforeCommit)
 
 ---
 
-## 📄 License
-This project is developed for Indian Railways Block Planning & Optimization demonstrations. All rights reserved.
+
